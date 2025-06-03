@@ -1,13 +1,13 @@
 export type User = {
   id: string
-  accountType: string
-  address: string
-  avatar: string
-  createdAt: Date
-  dateOfBirth: Date
+  accountType?: string
+  address?: string
+  avatar?: string
+  createdAt?: string
+  dateOfBirth?: string
   email: string
-  fcmToken: string
+  fcmToken?: string
   fullName: string
-  googleId: string
-  lastLogin: Date
+  googleId?: string
+  lastLogin?: string
 }

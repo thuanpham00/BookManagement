@@ -15,6 +15,14 @@ export default function useRouter() {
       element: <MainLayoutAdmin />,
       children: [
         {
+          path: "/",
+          element: (
+            <Suspense>
+              <ManageUsers />
+            </Suspense>
+          )
+        },
+        {
           path: "admin/users",
           element: (
             <Suspense>

@@ -1,13 +1,13 @@
 import { useLocation } from "react-router-dom"
-import { Book, BookOpenCheck, LayoutDashboard, PackageSearch, User, Users } from "lucide-react"
+import { Book, Bell, Bookmark, User, ChartBarStacked } from "lucide-react"
 import SidebarItem from "../SidebarItem"
 
 const sideBarList = [
-  { name: "Quản lý người dùng", icon: LayoutDashboard, path: "/admin/users" },
-  { name: "Quản lý tài liệu", icon: User, path: "/admin/documents" },
-  { name: "Quản lý danh mục", icon: Users, path: "/admin/categories" },
-  { name: "Quản lý thông báo", icon: BookOpenCheck, path: "/admin/notifications" },
-  { name: "Quản lý loại tài khoản", icon: PackageSearch, path: "/admin/type-account" }
+  { name: "Quản lý Người dùng", icon: User, path: "/admin/users" },
+  { name: "Quản lý Tài liệu", icon: Book, path: "/admin/documents" },
+  { name: "Quản lý Thể loại", icon: ChartBarStacked, path: "/admin/categories" },
+  { name: "Quản lý Thông báo", icon: Bell, path: "/admin/notifications" },
+  { name: "Quản lý Loại tài khoản", icon: Bookmark, path: "/admin/type-account" }
 ]
 
 export default function Sidebar() {
@@ -22,7 +22,9 @@ export default function Sidebar() {
         </div>
         <div className="mt-8">
           {sideBarList.map((item, index) => {
-            const isActive = location.pathname.startsWith(item.path)
+            const isActive =
+              location.pathname === "/" && item.path === "/admin/users" ? true : location.pathname.startsWith(item.path)
+
             const IconComponent = item.icon
             return (
               <SidebarItem
