@@ -40,3 +40,20 @@ export const schemaAddUser = yup.object({
 })
 
 export type SchemaUserAddType = yup.InferType<typeof schemaAddUser>
+
+export const schemaDocument = yup.object({
+  id: yup.string(),
+  author: yup.string().required("Tên tác giả bắt buộc!"),
+  description: yup.string().required("Mô tả bắt buộc!"),
+  coverImage: yup.string(),
+  fileUrl: yup.string(),
+  genreIds: yup.array().required("Thể loại tài liệu bắt buộc"),
+  isPremium: yup.string(),
+  language: yup.string().required("Ngôn ngữ bắt buộc!"),
+  pageCount: yup.number().required("Số trang tài liệu bắt buộc!"),
+  publishDate: yup.string(),
+  title: yup.string().required("Tựa đề bắt buộc!"),
+  viewCount: yup.number()
+})
+
+export type SchemaDocumentType = yup.InferType<typeof schemaDocument>

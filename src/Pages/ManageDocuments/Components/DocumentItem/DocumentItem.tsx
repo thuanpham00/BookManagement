@@ -14,16 +14,16 @@ import { formatDate } from "src/Helpers/common"
 import { Document } from "src/Types/document.type"
 
 export default function DocumentItem({
-  item
-  // handleEditItem
+  item,
+  handleEditItem
 }: {
   item: Document
-  // handleEditItem: (id: string) => void
+  handleEditItem: (id: string) => void
 }) {
-  // const handleEditUserItem = (id: string) => {
-  //   handleEditItem(id)
-  // }
-  console.log(item.isPremium)
+  const handleEditUserItem = (id: string) => {
+    handleEditItem(id)
+  }
+
   return (
     <div
       className="bg-white grid grid-cols-6 items-center gap-2 py-3 cursor-pointer border-t-0 border border-[#dedede] dark:border-darkBorder px-4 last:rounded-bl-xl last:rounded-br-xl"
@@ -39,7 +39,7 @@ export default function DocumentItem({
       </div>
       <div className="col-span-1 text-center">{item.publishDate ? formatDate(item.publishDate as string) : ""}</div>
       <div className="col-span-1 flex items-center justify-center gap-2">
-        <button>
+        <button onClick={() => handleEditUserItem(item.id)}>
           <Pencil color="orange" size={18} />
         </button>
         <AlertDialog>

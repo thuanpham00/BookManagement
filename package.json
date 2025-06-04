@@ -42,6 +42,7 @@
     "react-helmet-async": "^2.0.5",
     "react-hook-form": "^7.57.0",
     "react-router-dom": "^7.1.1",
+    "react-select": "^5.10.1",
     "react-toastify": "^11.0.3",
     "swiper": "^11.2.1",
     "tailwind-merge": "^3.0.1",

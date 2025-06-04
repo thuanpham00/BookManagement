@@ -6,7 +6,13 @@ export const config = {
   maxSizeUploadImage: 1048576 // 1mb = 1.048.576 byte
 }
 
-export default function InputFileImage({ onChange }: { onChange?: (file?: File) => void }) {
+export default function InputFileImage({
+  onChange,
+  file = false
+}: {
+  onChange?: (file?: File) => void
+  file?: boolean
+}) {
   const refInput = useRef<HTMLInputElement>(null)
   const handleInputFile = () => {
     refInput.current?.click()
@@ -14,17 +20,25 @@ export default function InputFileImage({ onChange }: { onChange?: (file?: File) 
 
   const onFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const fileFormLocal = event.target.files?.[0]
-    if (fileFormLocal && (fileFormLocal?.size >= config.maxSizeUploadImage || !fileFormLocal?.type.includes("image"))) {
-      toast.error("File vượt quá kích thước và không đúng định dạng ", {
-        autoClose: 1500
-      })
-    } else {
-      toast.success("File upload thành công", {
-        autoClose: 1500
-      })
-      // Tức là component con đang "gửi dữ liệu" lên component cha qua props.onChange
+    if (file) {
       // eslint-disable-next-line @typescript-eslint/no-unused-expressions
       onChange && onChange(fileFormLocal)
+    } else {
+      if (
+        fileFormLocal &&
+        (fileFormLocal?.size >= config.maxSizeUploadImage || !fileFormLocal?.type.includes("image"))
+      ) {
+        toast.error("File vượt quá kích thước và không đúng định dạng ", {
+          autoClose: 1500
+        })
+      } else {
+        toast.success("File upload thành công", {
+          autoClose: 1500
+        })
+        // Tức là component con đang "gửi dữ liệu" lên component cha qua props.onChange
+        // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+        onChange && onChange(fileFormLocal)
+      }
     }
   }
 
@@ -39,7 +53,7 @@ export default function InputFileImage({ onChange }: { onChange?: (file?: File) 
         ref={refInput}
         type="file"
         className="hidden"
-        accept=".jpg,.jpeg,.png"
+        accept={file ? ".pdf" : ".jpg,.jpeg,.png"}
       />
       <Button
         type="button"
@@ -47,7 +61,6 @@ export default function InputFileImage({ onChange }: { onChange?: (file?: File) 
         nameButton="Chọn file"
         classNameButton="px-4 py-2 bg-blue-500 mt-2 text-white font-semibold rounded-sm hover:bg-blue-500/80 duration-200"
       />
-      <span className="block mt-2 text-[13px]">Maximum file size is 1 MB Format: .JPEG, .PNG</span>
     </div>
   )
 }

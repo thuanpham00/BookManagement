@@ -66,7 +66,6 @@ export default function ManageCategories() {
         const docRef = doc(db, "genres", categoryId)
         const docSnap = await getDoc(docRef)
         const data = docSnap.data() as DocumentData
-        console.log(data)
         setValue("id", categoryId)
         setValue("name", data?.name || "")
         setValue("description", data?.description || "")

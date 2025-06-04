@@ -102,7 +102,6 @@ export default function ManageUsers() {
         const docRef = doc(db, "users", userId)
         const docSnap = await getDoc(docRef)
         const data = docSnap.data() as DocumentData
-        console.log(data)
         let avatarUrl = ""
         try {
           if (data.avatar) {
