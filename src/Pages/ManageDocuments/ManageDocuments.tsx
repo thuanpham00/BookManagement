@@ -26,6 +26,7 @@ import { toast } from "react-toastify"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { formatDateTimeLocal } from "src/Helpers/common"
 import { motion } from "framer-motion"
+import AddDocument from "./Components/AddDocument"
 
 type FormDataUpdate = Pick<
   SchemaDocumentType,
@@ -81,7 +82,7 @@ export default function ManageDocuments() {
     label: genre.name
   }))
 
-  const fetchCategories = async () => {
+  const fetchDocuments = async () => {
     try {
       const querySnapshot = await getDocs(collection(db, "documents"))
       const documentsData: Document[] = querySnapshot.docs.map((doc) => {
@@ -103,7 +104,7 @@ export default function ManageDocuments() {
   }
 
   useEffect(() => {
-    fetchCategories()
+    fetchDocuments()
   }, [])
 
   const [documentId, setDocumentId] = useState<string | null>(null)
@@ -152,8 +153,8 @@ export default function ManageDocuments() {
         setValue("title", data?.title || "")
         setValue("isPremium", data?.isPremium === true ? "1" : "0")
         setValue("language", data?.language || "")
-        setValue("pageCount", data?.pageCount || "")
-        setValue("viewCount", data?.viewCount || "")
+        setValue("pageCount", data?.pageCount || 0)
+        setValue("viewCount", data?.viewCount || 0)
         setValue("description", data?.description || "")
 
         const date = data.publishDate.toDate?.() || new Date(data.publishDate)
@@ -286,7 +287,7 @@ export default function ManageDocuments() {
       // Cập nhật Firestore
       await updateDoc(documentRef, updatedData)
       await batch.commit()
-      fetchCategories()
+      fetchDocuments()
       toast.success("Cập nhật tài liệu thành công", { autoClose: 1500 })
       handleExitsEditItem()
     } catch (error) {
@@ -294,6 +295,7 @@ export default function ManageDocuments() {
       toast.error("Cập nhật tài liệu thất bại")
     }
   }
+  const [isAdd, setIsAdd] = useState<boolean>(false)
 
   if (loading) return <p>Đang tải tài liệu...</p>
   return (
@@ -306,11 +308,7 @@ export default function ManageDocuments() {
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
           className="bg-gradient-to-r from-blue-500 to-indigo-500 text-white px-6 py-3 rounded-full shadow-lg flex items-center gap-2 hover:from-blue-600 hover:to-indigo-600 transition-all font-semibold"
-          onClick={() => {
-            // setIsCreating(true)
-            // resetForm()
-            // setIsModalOpen(true)
-          }}
+          onClick={() => setIsAdd((prev) => !prev)}
         >
           <Plus /> Thêm mới
         </motion.button>
@@ -538,6 +536,8 @@ export default function ManageDocuments() {
               ""
             )}
           </div>
+
+          <div>{isAdd ? <AddDocument setIsAdd={setIsAdd} fetchDocuments={fetchDocuments} /> : ""}</div>
         </div>
       </motion.div>
     </div>

@@ -186,7 +186,7 @@ export default function AddUser({
               <Button
                 type="submit"
                 nameButton="Thêm người dùng"
-                classNameButton="w-[150px] py-2 bg-blue-500 mt-2 w-full text-white font-semibold rounded-sm hover:bg-blue-500/80 duration-200"
+                classNameButton="px-2 py-2 bg-blue-500 mt-2 w-full text-white font-semibold rounded-sm hover:bg-blue-500/80 duration-200"
               />
             </div>
           </div>

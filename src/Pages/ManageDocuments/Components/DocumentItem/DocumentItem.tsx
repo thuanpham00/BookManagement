@@ -1,4 +1,4 @@
-import { deleteDoc, doc } from "firebase/firestore"
+import { deleteDoc, doc, getDoc, increment, writeBatch } from "firebase/firestore"
 import { Pencil, Trash2 } from "lucide-react"
 import { toast } from "react-toastify"
 import {
@@ -31,7 +31,27 @@ export default function DocumentItem({
 
   const handleDeleteDocument = async (documentId: string) => {
     try {
-      await deleteDoc(doc(db, "documents", documentId))
+      const documentRef = doc(db, "documents", documentId)
+
+      // 1. Lấy dữ liệu của document trước khi xoá
+      const docSnap = await getDoc(documentRef)
+      if (!docSnap.exists()) {
+        toast.error("Tài liệu không tồn tại")
+        return
+      }
+      const data = docSnap.data()
+      const genreIds: string[] = data.genreIds || []
+
+      // 2. Cập nhật documentCount cho các genre liên quan (giảm 1)
+      const batch = writeBatch(db)
+      genreIds.forEach((genreId) => {
+        const genreRef = doc(db, "genres", genreId)
+        batch.update(genreRef, { documentCount: increment(-1) })
+      })
+
+      await deleteDoc(documentRef)
+      await batch.commit()
+
       // Xoá khỏi state sau khi xoá Firebase thành công
       setDocuments((prev) => prev.filter((doc) => doc.id !== documentId))
       toast.success("Xóa tài liệu thành công", { autoClose: 1500 })
