@@ -9,7 +9,7 @@ function MainLayoutInner() {
         <Sidebar />
       </div>
       <div className="w-[83%] dark:bg-darkSecond">
-        <div className="px-4 py-2">
+        <div className="p-4">
           <Outlet />
         </div>
       </div>

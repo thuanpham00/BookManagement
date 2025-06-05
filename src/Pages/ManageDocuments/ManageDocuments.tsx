@@ -17,7 +17,7 @@ import DocumentItem from "./Components/DocumentItem"
 import Input from "src/Components/Input"
 import Button from "src/Components/Button"
 import { Controller, useForm } from "react-hook-form"
-import { X } from "lucide-react"
+import { Plus, X } from "lucide-react"
 import { schemaDocument, SchemaDocumentType } from "src/Helpers/rule"
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage"
 import InputFileImage from "src/Components/InputFileImage"
@@ -25,6 +25,7 @@ import Select from "react-select"
 import { toast } from "react-toastify"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { formatDateTimeLocal } from "src/Helpers/common"
+import { motion } from "framer-motion"
 
 type FormDataUpdate = Pick<
   SchemaDocumentType,
@@ -145,10 +146,11 @@ export default function ManageDocuments() {
         const docSnap = await getDoc(docRef)
         const data = docSnap.data() as DocumentData
 
+        console.log(data?.isPremium)
         setValue("id", documentId)
         setValue("author", data?.author || "")
         setValue("title", data?.title || "")
-        setValue("isPremium", data?.isPremium || false)
+        setValue("isPremium", data?.isPremium === true ? "1" : "0")
         setValue("language", data?.language || "")
         setValue("pageCount", data?.pageCount || "")
         setValue("viewCount", data?.viewCount || "")
@@ -160,7 +162,7 @@ export default function ManageDocuments() {
         try {
           if (data.coverImage) {
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            coverImage = await getDownloadURL(ref(storage, data.coverImage))
+            coverImage = await getDownloadURL(ref(storage, data.coverImage)) // đường dẫn firebase hiển thị
           }
         } catch (error: unknown) {
           console.warn("Không tìm thấy ảnh:", error)
@@ -250,12 +252,26 @@ export default function ManageDocuments() {
         batch.update(genreRef, { documentCount: increment(-1) })
       })
 
+      // Chuẩn bị dữ liệu cập nhật
+      const updatedData: any = {
+        author: data.author,
+        description: data.description,
+        genreIds: newGenreIds,
+        isPremium: data.isPremium === "1" ? true : false,
+        language: data.language,
+        pageCount: Number(data.pageCount),
+        publishDate: Timestamp.fromDate(new Date(data.publishDate as string)),
+        title: data.title,
+        viewCount: data.viewCount
+      }
+
       // Cập nhật file ảnh bìa nếu có
-      let coverImagePath = data.coverImage
+      let coverImagePath = data.coverImage // data.coverImage lúc này là link URL
       if (fileImage) {
         const imageRef = ref(storage, `biasach/${fileImage.name}`)
         await uploadBytes(imageRef, fileImage)
         coverImagePath = imageRef.fullPath
+        updatedData.coverImage = coverImagePath
       }
 
       // Cập nhật file PDF nếu có
@@ -264,21 +280,7 @@ export default function ManageDocuments() {
         const fileRef = ref(storage, `books/${filePDF.name}`)
         await uploadBytes(fileRef, filePDF)
         fileUrlPath = fileRef.fullPath
-      }
-
-      // Chuẩn bị dữ liệu cập nhật
-      const updatedData = {
-        author: data.author,
-        coverImage: coverImagePath,
-        description: data.description,
-        fileUrl: fileUrlPath,
-        genreIds: newGenreIds,
-        isPremium: data.isPremium === "1" ? true : false,
-        language: data.language,
-        pageCount: Number(data.pageCount),
-        publishDate: Timestamp.fromDate(new Date(data.publishDate as string)),
-        title: data.title,
-        viewCount: data.viewCount
+        updatedData.fileUrl = fileUrlPath
       }
 
       // Cập nhật Firestore
@@ -295,218 +297,249 @@ export default function ManageDocuments() {
 
   if (loading) return <p>Đang tải tài liệu...</p>
   return (
-    <div className="">
-      <h2 className="mt-10 text-2xl font-bold mb-8 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-transparent bg-clip-text text-center">
-        Danh sách tài liệu
-      </h2>
-      <div className="mt-4">
-        <div className="bg-[#f2f2f2] grid grid-cols-6 items-center gap-2 py-3 border border-[#dedede] px-4 rounded-tl-xl rounded-tr-xl">
-          <div className="col-span-1 text-[14px] font-semibold">Id</div>
-          <div className="col-span-1 text-[14px] font-semibold">Tác giả</div>
-          <div className="col-span-1 text-[14px] font-semibold">Tên tài liệu</div>
-          <div className="col-span-1 text-[14px] text-center font-semibold">Loại sách</div>
-          <div className="col-span-1 text-[14px] text-center font-semibold">Ngày xuất bản</div>
-          <div className="col-span-1 text-[14px] text-center font-semibold">Hành động</div>
-        </div>
-        <div>
-          {documents.length > 0 ? (
-            documents?.map((item) => (
-              <Fragment key={item.id}>
-                <DocumentItem item={item} handleEditItem={handleEditItem} />
-              </Fragment>
-            ))
-          ) : (
-            <div className="text-center mt-4">Không tìm thấy kết quả</div>
-          )}
-        </div>
-        <div>
-          {documentId !== null ? (
-            <Fragment>
-              <div className="fixed left-0 top-0 z-10 h-screen w-screen bg-black/60"></div>
-              <div className="z-20 fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
-                <button onClick={handleExitsEditItem} className="absolute right-2 top-1">
-                  <X color="gray" size={22} />
-                </button>
-                <form onSubmit={handleSubmit(onSubmit)} className="bg-white dark:bg-darkPrimary rounded-xl w-[1200px]">
-                  <h3 className="py-2 px-4 text-[15px] font-medium bg-[#f2f2f2] rounded-md">Thông tin người dùng</h3>
-                  <div className="w-full h-[1px] bg-[#dadada]"></div>
-                  <div className="p-4 pt-0">
-                    <div className="mt-4 flex items-start justify-between gap-4">
-                      <div className="grid grid-cols-12 flex-wrap gap-4 w-[70%]">
-                        <div className="col-span-3">
-                          <Input
-                            name="id"
-                            register={register}
-                            classNameInput="mt-1 p-2 w-full border border-[#dedede] dark:border-darkBorder bg-[#f2f2f2] dark:bg-darkSecond focus:border-blue-500 focus:ring-2 outline-none rounded-md"
-                            className="relative flex-1"
-                            nameInput="Mã tài liệu"
-                            disabled
-                          />
-                        </div>
-                        <div className="col-span-3">
-                          <Input
-                            name="author"
-                            register={register}
-                            placeholder="Nhập tên tác giả"
-                            messageErrorInput={errors.author?.message}
-                            classNameInput="mt-1 p-2 w-full border border-[#dedede] dark:border-darkBorder bg-white dark:bg-darkPrimary focus:border-blue-500 focus:ring-2 outline-none rounded-md"
-                            className="relative flex-1"
-                            nameInput="Tên tác giả"
-                          />
-                        </div>
-                        <div className="col-span-6">
-                          <Input
-                            name="title"
-                            register={register}
-                            placeholder="Nhập tựa đề"
-                            messageErrorInput={errors.title?.message}
-                            classNameInput="mt-1 p-2 w-full border border-[#dedede] dark:border-darkBorder bg-[#fff] dark:bg-darkSecond focus:border-blue-500 focus:ring-2 outline-none rounded-md"
-                            className="relative flex-1"
-                            nameInput="Title"
-                          />
-                        </div>
-                        <div className="col-span-6">
-                          <span className="mb-1]">Trạng thái</span>
-                          <Controller
-                            name="isPremium"
-                            control={control}
-                            render={({ field }) => {
-                              return (
-                                <select
-                                  value={field.value}
-                                  onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : undefined)}
-                                  className="p-2 border border-gray-300 dark:border-darkBorder bg-[#fff] dark:bg-black w-full mt-2 rounded-md"
-                                >
-                                  <option value="" disabled>
-                                    -- Chọn trạng thái --
-                                  </option>
-                                  <option value="1">Premium</option>
-                                  <option value="0">Normal</option>
-                                </select>
-                              )
-                            }}
-                          />
-                        </div>
-                        <div className="col-span-6">
-                          <Input
-                            name="language"
-                            register={register}
-                            messageErrorInput={errors.language?.message}
-                            classNameInput="mt-1 p-2 w-full border border-[#dedede] dark:border-darkBorder bg-[#fff] dark:bg-darkSecond focus:border-blue-500 focus:ring-2 outline-none rounded-md"
-                            className="relative flex-1"
-                            nameInput="Ngôn ngữ"
-                          />
-                        </div>
-                        <div className="col-span-6">
-                          <Input
-                            name="pageCount"
-                            register={register}
-                            messageErrorInput={errors.pageCount?.message}
-                            classNameInput="mt-1 p-2 w-full border border-[#dedede] dark:border-darkBorder bg-[#fff] dark:bg-darkSecond focus:border-blue-500 focus:ring-2 outline-none rounded-md"
-                            className="relative flex-1"
-                            nameInput="Số trang"
-                          />
-                        </div>
-                        <div className="col-span-6">
-                          <Input
-                            name="viewCount"
-                            register={register}
-                            messageErrorInput={errors.viewCount?.message}
-                            classNameInput="mt-1 p-2 w-full border border-[#dedede] dark:border-darkBorder bg-[#f2f2f2] dark:bg-darkSecond focus:border-blue-500 focus:ring-2 outline-none rounded-md"
-                            className="relative flex-1"
-                            nameInput="Lượt xem"
-                            disabled
-                          />
-                        </div>
-                        <div className="col-span-12">
-                          <Input
-                            name="description"
-                            register={register}
-                            messageErrorInput={errors.description?.message}
-                            classNameInput="mt-1 p-2 w-full border border-[#dedede] dark:border-darkBorder bg-[#fff] dark:bg-darkSecond focus:border-blue-500 focus:ring-2 outline-none rounded-md"
-                            className="relative flex-1"
-                            nameInput="Mô tả"
-                          />
-                        </div>
-                        <div className="col-span-6">
-                          <Input
-                            name="publishDate"
-                            register={register}
-                            messageErrorInput={errors.publishDate?.message}
-                            classNameInput="mt-1 p-2 w-full border border-[#dedede] dark:border-darkBorder bg-[#fff] dark:bg-darkSecond focus:border-blue-500 focus:ring-2 outline-none rounded-md"
-                            className="relative flex-1"
-                            nameInput="Ngày xuất bản"
-                            type="datetime-local"
-                          />
-                        </div>
-                        <div className="col-span-6">
-                          <span className="mb-1 block">Thể loại tài liệu</span>
-                          <Controller
-                            control={control} // từ useForm()
-                            name="genreIds" // tên trường trong form
-                            render={({ field }) => (
-                              <Select
-                                isMulti // chọn nhiều
-                                options={genreOptions} // danh sách thể loại
-                                placeholder="Chọn thể loại..."
-                                value={
-                                  field.value?.map((g: any) => ({
-                                    value: g.id,
-                                    label: g.name
-                                  })) || []
-                                }
-                                onChange={(selected) => {
-                                  const newGenres = selected.map((item) => ({
-                                    id: item.value,
-                                    name: item.label
-                                  }))
-                                  field.onChange(newGenres) // gửi lại về react-hook-form
-                                }}
-                                className="basic-multi-select"
-                                classNamePrefix="select"
-                              />
-                            )}
-                          />
-                        </div>
-                      </div>
-                      <div className="w-[30%] text-center">
-                        <div className="mb-2">Ảnh bìa</div>
-                        <img
-                          src={previewImage || coverImageWatch}
-                          className="h-[200px] w-[170px] mx-auto rounded-sm"
-                          alt="avatar default"
-                        />
-                        <InputFileImage onChange={handleChangeImage} />
-
-                        <div className="mb-2 mt-10">File</div>
-                        <a
-                          href={previewFilePDF || fileUrlWatch}
-                          target="_blank"
-                          className="mt-2 inline-flex items-center justify-center p-2 border border-gray-300 rounded-md hover:bg-[#dedede] duration-200"
-                          rel="noreferrer"
-                        >
-                          <div>Xem file</div>
-                          {fileName}
-                        </a>
-                        <InputFileImage file={true} onChange={handleChangeFile} />
-                      </div>
-                    </div>
-                    <div className="flex items-center justify-end">
-                      <Button
-                        type="submit"
-                        nameButton="Cập nhật"
-                        classNameButton="w-[120px] p-4 py-2 bg-blue-500 mt-2 w-full text-white font-semibold rounded-sm hover:bg-blue-500/80 duration-200"
-                      />
-                    </div>
-                  </div>
-                </form>
-              </div>
-            </Fragment>
-          ) : (
-            ""
-          )}
-        </div>
+    <div className="p-6 bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen">
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-3xl font-bold text-gray-800 bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600">
+          Quản lý tài liệu
+        </h2>
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          className="bg-gradient-to-r from-blue-500 to-indigo-500 text-white px-6 py-3 rounded-full shadow-lg flex items-center gap-2 hover:from-blue-600 hover:to-indigo-600 transition-all font-semibold"
+          onClick={() => {
+            // setIsCreating(true)
+            // resetForm()
+            // setIsModalOpen(true)
+          }}
+        >
+          <Plus /> Thêm mới
+        </motion.button>
       </div>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="rounded-2xl shadow-xl overflow-hidden"
+      >
+        <div className="mt-2">
+          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 grid grid-cols-6 items-center gap-2 py-3 border border-[#dedede] px-4 rounded-tl-xl rounded-tr-xl">
+            <div className="col-span-1 text-[14px] font-semibold">Id</div>
+            <div className="col-span-1 text-[14px] font-semibold">Tác giả</div>
+            <div className="col-span-1 text-[14px] font-semibold">Tên tài liệu</div>
+            <div className="col-span-1 text-[14px] text-center font-semibold">Loại sách</div>
+            <div className="col-span-1 text-[14px] text-center font-semibold">Ngày xuất bản</div>
+            <div className="col-span-1 text-[14px] text-center font-semibold">Hành động</div>
+          </div>
+          <div>
+            {documents.length > 0 ? (
+              documents?.map((item, index) => (
+                <motion.div
+                  key={item.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.1 }}
+                  className="border-b hover:bg-gray-50 transition-colors"
+                >
+                  <DocumentItem item={item} handleEditItem={handleEditItem} setDocuments={setDocuments} />
+                </motion.div>
+              ))
+            ) : (
+              <div className="text-center mt-4">Không tìm thấy kết quả</div>
+            )}
+          </div>
+          <div>
+            {documentId !== null ? (
+              <Fragment>
+                <div className="fixed left-0 top-0 z-10 h-screen w-screen bg-black/60"></div>
+                <div className="z-20 fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+                  <button onClick={handleExitsEditItem} className="absolute right-2 top-1">
+                    <X color="gray" size={22} />
+                  </button>
+                  <form
+                    onSubmit={handleSubmit(onSubmit)}
+                    className="bg-white dark:bg-darkPrimary rounded-xl w-[1200px]"
+                  >
+                    <h3 className="py-2 px-4 text-[15px] font-medium bg-[#f2f2f2] rounded-md">Thông tin người dùng</h3>
+                    <div className="w-full h-[1px] bg-[#dadada]"></div>
+                    <div className="p-4 pt-0">
+                      <div className="mt-4 flex items-start justify-between gap-4">
+                        <div className="grid grid-cols-12 flex-wrap gap-4 w-[70%]">
+                          <div className="col-span-3">
+                            <Input
+                              name="id"
+                              register={register}
+                              classNameInput="mt-1 p-2 w-full border border-[#dedede] dark:border-darkBorder bg-[#f2f2f2] dark:bg-darkSecond focus:border-blue-500 focus:ring-2 outline-none rounded-md"
+                              className="relative flex-1"
+                              nameInput="Mã tài liệu"
+                              disabled
+                            />
+                          </div>
+                          <div className="col-span-3">
+                            <Input
+                              name="author"
+                              register={register}
+                              placeholder="Nhập tên tác giả"
+                              messageErrorInput={errors.author?.message}
+                              classNameInput="mt-1 p-2 w-full border border-[#dedede] dark:border-darkBorder bg-white dark:bg-darkPrimary focus:border-blue-500 focus:ring-2 outline-none rounded-md"
+                              className="relative flex-1"
+                              nameInput="Tên tác giả"
+                            />
+                          </div>
+                          <div className="col-span-6">
+                            <Input
+                              name="title"
+                              register={register}
+                              placeholder="Nhập tựa đề"
+                              messageErrorInput={errors.title?.message}
+                              classNameInput="mt-1 p-2 w-full border border-[#dedede] dark:border-darkBorder bg-[#fff] dark:bg-darkSecond focus:border-blue-500 focus:ring-2 outline-none rounded-md"
+                              className="relative flex-1"
+                              nameInput="Title"
+                            />
+                          </div>
+                          <div className="col-span-6">
+                            <span className="mb-1]">Trạng thái</span>
+                            <Controller
+                              name="isPremium"
+                              control={control}
+                              render={({ field }) => {
+                                return (
+                                  <select
+                                    value={field.value}
+                                    onChange={(e) =>
+                                      field.onChange(e.target.value ? Number(e.target.value) : undefined)
+                                    }
+                                    className="p-2 border border-gray-300 dark:border-darkBorder bg-[#fff] dark:bg-black w-full mt-2 rounded-md"
+                                  >
+                                    <option value="" disabled>
+                                      -- Chọn trạng thái --
+                                    </option>
+                                    <option value="1">Premium</option>
+                                    <option value="0">Normal</option>
+                                  </select>
+                                )
+                              }}
+                            />
+                          </div>
+                          <div className="col-span-6">
+                            <Input
+                              name="language"
+                              register={register}
+                              messageErrorInput={errors.language?.message}
+                              classNameInput="mt-1 p-2 w-full border border-[#dedede] dark:border-darkBorder bg-[#fff] dark:bg-darkSecond focus:border-blue-500 focus:ring-2 outline-none rounded-md"
+                              className="relative flex-1"
+                              nameInput="Ngôn ngữ"
+                            />
+                          </div>
+                          <div className="col-span-6">
+                            <Input
+                              name="pageCount"
+                              register={register}
+                              messageErrorInput={errors.pageCount?.message}
+                              classNameInput="mt-1 p-2 w-full border border-[#dedede] dark:border-darkBorder bg-[#fff] dark:bg-darkSecond focus:border-blue-500 focus:ring-2 outline-none rounded-md"
+                              className="relative flex-1"
+                              nameInput="Số trang"
+                            />
+                          </div>
+                          <div className="col-span-6">
+                            <Input
+                              name="viewCount"
+                              register={register}
+                              messageErrorInput={errors.viewCount?.message}
+                              classNameInput="mt-1 p-2 w-full border border-[#dedede] dark:border-darkBorder bg-[#f2f2f2] dark:bg-darkSecond focus:border-blue-500 focus:ring-2 outline-none rounded-md"
+                              className="relative flex-1"
+                              nameInput="Lượt xem"
+                              disabled
+                            />
+                          </div>
+                          <div className="col-span-12">
+                            <Input
+                              name="description"
+                              register={register}
+                              messageErrorInput={errors.description?.message}
+                              classNameInput="mt-1 p-2 w-full border border-[#dedede] dark:border-darkBorder bg-[#fff] dark:bg-darkSecond focus:border-blue-500 focus:ring-2 outline-none rounded-md"
+                              className="relative flex-1"
+                              nameInput="Mô tả"
+                            />
+                          </div>
+                          <div className="col-span-6">
+                            <Input
+                              name="publishDate"
+                              register={register}
+                              messageErrorInput={errors.publishDate?.message}
+                              classNameInput="mt-1 p-2 w-full border border-[#dedede] dark:border-darkBorder bg-[#fff] dark:bg-darkSecond focus:border-blue-500 focus:ring-2 outline-none rounded-md"
+                              className="relative flex-1"
+                              nameInput="Ngày xuất bản"
+                              type="datetime-local"
+                            />
+                          </div>
+                          <div className="col-span-6">
+                            <span className="mb-1 block">Thể loại tài liệu</span>
+                            <Controller
+                              control={control} // từ useForm()
+                              name="genreIds" // tên trường trong form
+                              render={({ field }) => (
+                                <Select
+                                  isMulti // chọn nhiều
+                                  options={genreOptions} // danh sách thể loại
+                                  placeholder="Chọn thể loại..."
+                                  value={
+                                    field.value?.map((g: any) => ({
+                                      value: g.id,
+                                      label: g.name
+                                    })) || []
+                                  }
+                                  onChange={(selected) => {
+                                    const newGenres = selected.map((item) => ({
+                                      id: item.value,
+                                      name: item.label
+                                    }))
+                                    field.onChange(newGenres) // gửi lại về react-hook-form
+                                  }}
+                                  className="basic-multi-select"
+                                  classNamePrefix="select"
+                                />
+                              )}
+                            />
+                          </div>
+                        </div>
+                        <div className="w-[30%] text-center">
+                          <div className="mb-2">Ảnh bìa</div>
+                          <img
+                            src={previewImage || coverImageWatch}
+                            className="h-[200px] w-[170px] mx-auto rounded-sm"
+                            alt="avatar default"
+                          />
+                          <InputFileImage onChange={handleChangeImage} />
+
+                          <div className="mb-2 mt-10">File</div>
+                          <a
+                            href={previewFilePDF || fileUrlWatch}
+                            target="_blank"
+                            className="mt-2 inline-flex items-center justify-center p-2 border border-gray-300 rounded-md hover:bg-[#dedede] duration-200"
+                            rel="noreferrer"
+                          >
+                            <div>Xem file</div>
+                            {fileName}
+                          </a>
+                          <InputFileImage file={true} onChange={handleChangeFile} />
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-end">
+                        <Button
+                          type="submit"
+                          nameButton="Cập nhật"
+                          classNameButton="w-[120px] p-4 py-2 bg-blue-500 mt-2 w-full text-white font-semibold rounded-sm hover:bg-blue-500/80 duration-200"
+                        />
+                      </div>
+                    </div>
+                  </form>
+                </div>
+              </Fragment>
+            ) : (
+              ""
+            )}
+          </div>
+        </div>
+      </motion.div>
     </div>
   )
 }

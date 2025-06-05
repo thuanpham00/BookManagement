@@ -1,4 +1,6 @@
+import { deleteDoc, doc } from "firebase/firestore"
 import { Pencil, Trash2 } from "lucide-react"
+import { toast } from "react-toastify"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -10,23 +12,37 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger
 } from "src/Components/ui/alert-dialog"
+import { db } from "src/firebase"
 import { formatDate } from "src/Helpers/common"
 import { Document } from "src/Types/document.type"
 
 export default function DocumentItem({
   item,
-  handleEditItem
+  handleEditItem,
+  setDocuments
 }: {
   item: Document
   handleEditItem: (id: string) => void
+  setDocuments: React.Dispatch<React.SetStateAction<Document[]>>
 }) {
   const handleEditUserItem = (id: string) => {
     handleEditItem(id)
   }
 
+  const handleDeleteDocument = async (documentId: string) => {
+    try {
+      await deleteDoc(doc(db, "documents", documentId))
+      // Xoá khỏi state sau khi xoá Firebase thành công
+      setDocuments((prev) => prev.filter((doc) => doc.id !== documentId))
+      toast.success("Xóa tài liệu thành công", { autoClose: 1500 })
+    } catch (error) {
+      console.error("Lỗi khi xoá tài liệu:", error)
+    }
+  }
+
   return (
     <div
-      className="bg-white grid grid-cols-6 items-center gap-2 py-3 cursor-pointer border-t-0 border border-[#dedede] dark:border-darkBorder px-4 last:rounded-bl-xl last:rounded-br-xl"
+      className="bg-white grid grid-cols-6 items-center gap-2 py-3 cursor-pointer border-t-0 border border-[#dedede] dark:border-darkBorder px-4"
       key={item.id}
     >
       <div className="col-span-1 flex items-center justify-between">
@@ -55,7 +71,9 @@ export default function DocumentItem({
             </AlertDialogHeader>
             <AlertDialogFooter>
               <AlertDialogCancel>Hủy</AlertDialogCancel>
-              <AlertDialogAction className="bg-red-500 hover:bg-red-600">Xóa</AlertDialogAction>
+              <AlertDialogAction onClick={() => handleDeleteDocument(item.id)} className="bg-red-500 hover:bg-red-600">
+                Xóa
+              </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>

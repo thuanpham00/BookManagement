@@ -56,7 +56,7 @@ export default function CategoryItem({
 
   return (
     <div
-      className="bg-white grid grid-cols-5 items-center gap-2 py-3 cursor-pointer border-t-0 border border-[#dedede] dark:border-darkBorder px-4 last:rounded-bl-xl last:rounded-br-xl"
+      className="bg-white grid grid-cols-5 items-center gap-2 py-3 cursor-pointer border-t-0 border border-[#dedede] dark:border-darkBorder px-4"
       key={item.id}
     >
       <div className="col-span-1 flex items-center justify-between">

@@ -4,7 +4,7 @@ import { Fragment, useCallback, useEffect, useMemo, useState } from "react"
 import { db, storage } from "src/firebase"
 import { User } from "src/Types/user.type"
 import UserItem from "./Components/UserItem"
-import { X } from "lucide-react"
+import { Plus, X } from "lucide-react"
 import { Controller, useForm } from "react-hook-form"
 import Input from "src/Components/Input"
 import Button from "src/Components/Button"
@@ -18,6 +18,7 @@ import IconGoogle from "src/Assets/img/iconGoogle.png"
 import Icon2 from "src/Assets/img/icon.png"
 import { toast } from "react-toastify"
 import AddUser from "./Components/AddUser"
+import { motion } from "framer-motion"
 
 type FormDataUpdate = Pick<
   SchemaUserType,
@@ -203,216 +204,229 @@ export default function ManageUsers() {
 
   if (loading) return <p>Đang tải người dùng...</p>
   return (
-    <div className="">
-      <h2 className="mt-10 text-2xl font-bold mb-8 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-transparent bg-clip-text text-center">
-        Danh sách người dùng
-      </h2>
-      <div className="flex justify-end">
-        <button
-          onClick={() => setIsAdd((prev) => !prev)}
-          className="p-4 py-2 bg-blue-500 hover:bg-blue-400 duration-200 rounded-md text-white font-medium"
-        >
-          Thêm người dùng
-        </button>
+    <div className="p-6 bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen">
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-3xl font-bold text-gray-800 bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600">
+          Quản lý người dùng
+        </h2>
+        <div className="flex justify-end">
+          <button
+            onClick={() => setIsAdd((prev) => !prev)}
+            className="bg-gradient-to-r from-blue-500 to-indigo-500 text-white px-6 py-3 rounded-full shadow-lg flex items-center gap-2 hover:from-blue-600 hover:to-indigo-600 transition-all font-semibold"
+          >
+            <Plus /> Thêm người dùng
+          </button>
+        </div>
       </div>
-      <div className="mt-4">
-        <div className="bg-[#f2f2f2] grid grid-cols-12 items-center gap-2 py-3 border border-[#dedede] px-4 rounded-tl-xl rounded-tr-xl">
-          <div className="col-span-2 text-[14px] font-semibold">Id</div>
-          <div className="col-span-2 text-[14px] font-semibold">Họ Tên</div>
-          <div className="col-span-2 text-[14px] font-semibold">Email</div>
-          <div className="col-span-1 text-[14px] text-center font-semibold">Loại tài khoản</div>
-          <div className="col-span-2 text-[14px] text-center font-semibold">Địa chỉ</div>
-          <div className="col-span-1 text-[14px] font-semibold">Ngày sinh</div>
-          <div className="col-span-1 text-[14px] font-semibold">Lần cuối đăng nhập</div>
-          <div className="col-span-1 text-[14px] text-center font-semibold">Hành động</div>
-        </div>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="bg-white rounded-2xl shadow-xl overflow-hidden"
+      >
         <div>
-          {users.length > 0 ? (
-            users?.map((item) => (
-              <Fragment key={item.id}>
-                <UserItem item={item} handleEditItem={handleEditItem} setUsers={setUsers} />
-              </Fragment>
-            ))
-          ) : (
-            <div className="text-center mt-4">Không tìm thấy kết quả</div>
-          )}
-        </div>
-        <div>
-          {userId !== null ? (
-            <Fragment>
-              <div className="fixed left-0 top-0 z-10 h-screen w-screen bg-black/60"></div>
-              <div className="z-20 fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
-                <button onClick={handleExitsEditItem} className="absolute right-2 top-1">
-                  <X color="gray" size={22} />
-                </button>
-                <form onSubmit={handleUpdateUser} className="bg-white dark:bg-darkPrimary rounded-xl w-[1000px]">
-                  <h3 className="py-2 px-4 text-[15px] font-medium bg-[#f2f2f2] rounded-md">Thông tin người dùng</h3>
-                  <div className="w-full h-[1px] bg-[#dadada]"></div>
-                  <div className="p-4 pt-0">
-                    <div className="mt-4 flex justify-between gap-4">
-                      <div className="grid grid-cols-12 flex-wrap gap-4 w-[70%]">
-                        <div className="col-span-3">
-                          <Input
-                            name="id"
-                            register={register}
-                            messageErrorInput={errors.id?.message}
-                            classNameInput="mt-1 p-2 w-full border border-[#dedede] dark:border-darkBorder bg-[#f2f2f2] dark:bg-darkSecond focus:border-blue-500 focus:ring-2 outline-none rounded-md"
-                            className="relative flex-1"
-                            nameInput="Mã người dùng"
-                            disabled
-                          />
-                        </div>
-                        <div className="col-span-3">
-                          <Input
-                            name="fullName"
-                            register={register}
-                            placeholder="Nhập họ tên"
-                            messageErrorInput={errors.fullName?.message}
-                            classNameInput={`mt-1 p-2 w-full border border-[#dedede] ${googleId !== "" ? "bg-[#f2f2f2]" : "bg-white"} focus:border-blue-500 focus:ring-2 outline-none rounded-md`}
-                            className="relative flex-1"
-                            nameInput="Họ tên"
-                            disabled={googleId !== "" ? true : false}
-                          />
-                        </div>
-                        <div className="col-span-6">
-                          <Input
-                            name="email"
-                            register={register}
-                            placeholder="Nhập họ tên"
-                            messageErrorInput={errors.email?.message}
-                            classNameInput="mt-1 p-2 w-full border border-[#dedede] dark:border-darkBorder bg-[#f2f2f2] dark:bg-darkSecond focus:border-blue-500 focus:ring-2 outline-none rounded-md"
-                            className="relative flex-1"
-                            nameInput="Email"
-                            disabled
-                          />
-                        </div>
-                        <div className="col-span-6">
-                          <Input
-                            name="accountType"
-                            register={register}
-                            messageErrorInput={errors.accountType?.message}
-                            classNameInput="mt-1 p-2 w-full border border-[#dedede] dark:border-darkBorder bg-[#f2f2f2] dark:bg-darkSecond focus:border-blue-500 focus:ring-2 outline-none rounded-md"
-                            className="relative flex-1"
-                            nameInput="Loại tài khoản"
-                            disabled
-                          />
-                        </div>
-                        <div className="col-span-6">
-                          <Controller
-                            name="dateOfBirth"
-                            control={control}
-                            render={({ field }) => {
-                              return (
-                                <DateSelect
-                                  googleId={googleId as string}
-                                  value={dateOfBirth}
-                                  onChange={field.onChange}
-                                  errorMessage={errors.dateOfBirth?.message}
-                                />
-                              )
-                            }}
-                          />
-                        </div>
-                        <div className="col-span-12">
-                          <Input
-                            name="address"
-                            register={register}
-                            messageErrorInput={errors.address?.message}
-                            classNameInput={`mt-1 p-2 w-full border border-[#dedede] ${googleId !== "" ? "bg-[#f2f2f2]" : "bg-white"} focus:border-blue-500 focus:ring-2 outline-none rounded-md`}
-                            className="relative flex-1"
-                            nameInput="Địa chỉ"
-                            disabled={googleId !== "" ? true : false}
-                          />
-                        </div>
-                        <div className="col-span-12">
-                          <Input
-                            name="fcmToken"
-                            register={register}
-                            messageErrorInput={errors.fcmToken?.message}
-                            classNameInput="mt-1 p-2 w-full border border-[#dedede] dark:border-darkBorder bg-[#f2f2f2] dark:bg-darkPrimary focus:border-blue-500 focus:ring-2 outline-none rounded-md"
-                            className="relative flex-1"
-                            nameInput="FCM-Token"
-                            disabled
-                          />
-                        </div>
-                        <div className="col-span-6">
-                          <Input
-                            name="createdAt"
-                            register={register}
-                            classNameInput="mt-1 p-2 w-full border border-[#dedede] dark:border-darkBorder bg-[#f2f2f2] dark:bg-darkSecond focus:border-blue-500 focus:ring-2 outline-none rounded-md"
-                            className="relative flex-1"
-                            nameInput="Ngày tạo"
-                            disabled
-                          />
-                        </div>
-                        <div className="col-span-6">
-                          <Input
-                            name="lastLogin"
-                            register={register}
-                            classNameInput="mt-1 p-2 w-full border border-[#dedede] dark:border-darkBorder bg-[#f2f2f2] dark:bg-darkSecond focus:border-blue-500 focus:ring-2 outline-none rounded-md"
-                            className="relative flex-1"
-                            nameInput="Lần cuối đăng nhập"
-                            disabled
-                          />
-                        </div>
-                      </div>
-                      <div className="w-[1px] h-[340px] bg-black/20"></div>
-                      <div className="text-center">
-                        <div className="p-2 px-4 bg-white inline-block  text-black border-blue-500 border rounded-md">
-                          {googleId !== "" ? (
-                            <div className="flex items-center gap-1">
-                              <img src={IconGoogle} alt="Icon" className="w-6 h-6" />
-                              <span> Tài khoản google</span>
-                            </div>
-                          ) : (
-                            <div className="flex items-center gap-1">
-                              <img src={Icon2} alt="Icon" className="w-6 h-6" />
-                              <span>Tài khoản</span>
-                            </div>
-                          )}
-                        </div>
-                        <div className="mb-2 mt-4">Avatar</div>
-                        <img
-                          src={previewImage || avatarWatch}
-                          className="h-28 w-28 rounded-full mx-auto"
-                          alt="avatar default"
-                          referrerPolicy="no-referrer"
-                        />
-                        {googleId !== "" ? (
-                          <div>
-                            <span className="block mt-2 text-[13px]">
-                              Maximum file size is 1 MB Format: .JPEG, .PNG
-                            </span>
-                            <Button
-                              type="button"
-                              nameButton="Chọn file"
-                              classNameButton="px-4 py-2 bg-blue-500 mt-2 text-white font-semibold rounded-sm hover:bg-blue-500/80 duration-200"
+          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 grid grid-cols-12 items-center gap-2 py-3 border border-[#dedede] px-4 rounded-tl-xl rounded-tr-xl">
+            <div className="col-span-2 text-[14px] font-semibold">Id</div>
+            <div className="col-span-2 text-[14px] font-semibold">Họ Tên</div>
+            <div className="col-span-2 text-[14px] font-semibold">Email</div>
+            <div className="col-span-1 text-[14px] text-center font-semibold">Loại tài khoản</div>
+            <div className="col-span-2 text-[14px] text-center font-semibold">Địa chỉ</div>
+            <div className="col-span-1 text-[14px] font-semibold">Ngày sinh</div>
+            <div className="col-span-1 text-[14px] font-semibold">Lần cuối đăng nhập</div>
+            <div className="col-span-1 text-[14px] text-center font-semibold">Hành động</div>
+          </div>
+          <div>
+            {users.length > 0 ? (
+              users?.map((item, index) => (
+                <motion.div
+                  key={item.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.1 }}
+                  className="border-b hover:bg-gray-50 transition-colors"
+                >
+                  <UserItem item={item} handleEditItem={handleEditItem} setUsers={setUsers} />
+                </motion.div>
+              ))
+            ) : (
+              <div className="text-center mt-4">Không tìm thấy kết quả</div>
+            )}
+          </div>
+          <div>
+            {userId !== null ? (
+              <Fragment>
+                <div className="fixed left-0 top-0 z-10 h-screen w-screen bg-black/60"></div>
+                <div className="z-20 fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+                  <button onClick={handleExitsEditItem} className="absolute right-2 top-1">
+                    <X color="gray" size={22} />
+                  </button>
+                  <form onSubmit={handleUpdateUser} className="bg-white dark:bg-darkPrimary rounded-xl w-[1000px]">
+                    <h3 className="py-2 px-4 text-[15px] font-medium bg-[#f2f2f2] rounded-md">Thông tin người dùng</h3>
+                    <div className="w-full h-[1px] bg-[#dadada]"></div>
+                    <div className="p-4 pt-0">
+                      <div className="mt-4 flex justify-between gap-4">
+                        <div className="grid grid-cols-12 flex-wrap gap-4 w-[70%]">
+                          <div className="col-span-3">
+                            <Input
+                              name="id"
+                              register={register}
+                              messageErrorInput={errors.id?.message}
+                              classNameInput="mt-1 p-2 w-full border border-[#dedede] dark:border-darkBorder bg-[#f2f2f2] dark:bg-darkSecond focus:border-blue-500 focus:ring-2 outline-none rounded-md"
+                              className="relative flex-1"
+                              nameInput="Mã người dùng"
                               disabled
                             />
                           </div>
-                        ) : (
-                          <InputFileImage onChange={handleChangeImage} />
-                        )}
+                          <div className="col-span-3">
+                            <Input
+                              name="fullName"
+                              register={register}
+                              placeholder="Nhập họ tên"
+                              messageErrorInput={errors.fullName?.message}
+                              classNameInput={`mt-1 p-2 w-full border border-[#dedede] ${googleId !== "" ? "bg-[#f2f2f2]" : "bg-white"} focus:border-blue-500 focus:ring-2 outline-none rounded-md`}
+                              className="relative flex-1"
+                              nameInput="Họ tên"
+                              disabled={googleId !== "" ? true : false}
+                            />
+                          </div>
+                          <div className="col-span-6">
+                            <Input
+                              name="email"
+                              register={register}
+                              placeholder="Nhập họ tên"
+                              messageErrorInput={errors.email?.message}
+                              classNameInput="mt-1 p-2 w-full border border-[#dedede] dark:border-darkBorder bg-[#f2f2f2] dark:bg-darkSecond focus:border-blue-500 focus:ring-2 outline-none rounded-md"
+                              className="relative flex-1"
+                              nameInput="Email"
+                              disabled
+                            />
+                          </div>
+                          <div className="col-span-6">
+                            <Input
+                              name="accountType"
+                              register={register}
+                              messageErrorInput={errors.accountType?.message}
+                              classNameInput="mt-1 p-2 w-full border border-[#dedede] dark:border-darkBorder bg-[#f2f2f2] dark:bg-darkSecond focus:border-blue-500 focus:ring-2 outline-none rounded-md"
+                              className="relative flex-1"
+                              nameInput="Loại tài khoản"
+                              disabled
+                            />
+                          </div>
+                          <div className="col-span-6">
+                            <Controller
+                              name="dateOfBirth"
+                              control={control}
+                              render={({ field }) => {
+                                return (
+                                  <DateSelect
+                                    googleId={googleId as string}
+                                    value={dateOfBirth}
+                                    onChange={field.onChange}
+                                    errorMessage={errors.dateOfBirth?.message}
+                                  />
+                                )
+                              }}
+                            />
+                          </div>
+                          <div className="col-span-12">
+                            <Input
+                              name="address"
+                              register={register}
+                              messageErrorInput={errors.address?.message}
+                              classNameInput={`mt-1 p-2 w-full border border-[#dedede] ${googleId !== "" ? "bg-[#f2f2f2]" : "bg-white"} focus:border-blue-500 focus:ring-2 outline-none rounded-md`}
+                              className="relative flex-1"
+                              nameInput="Địa chỉ"
+                              disabled={googleId !== "" ? true : false}
+                            />
+                          </div>
+                          <div className="col-span-12">
+                            <Input
+                              name="fcmToken"
+                              register={register}
+                              messageErrorInput={errors.fcmToken?.message}
+                              classNameInput="mt-1 p-2 w-full border border-[#dedede] dark:border-darkBorder bg-[#f2f2f2] dark:bg-darkPrimary focus:border-blue-500 focus:ring-2 outline-none rounded-md"
+                              className="relative flex-1"
+                              nameInput="FCM-Token"
+                              disabled
+                            />
+                          </div>
+                          <div className="col-span-6">
+                            <Input
+                              name="createdAt"
+                              register={register}
+                              classNameInput="mt-1 p-2 w-full border border-[#dedede] dark:border-darkBorder bg-[#f2f2f2] dark:bg-darkSecond focus:border-blue-500 focus:ring-2 outline-none rounded-md"
+                              className="relative flex-1"
+                              nameInput="Ngày tạo"
+                              disabled
+                            />
+                          </div>
+                          <div className="col-span-6">
+                            <Input
+                              name="lastLogin"
+                              register={register}
+                              classNameInput="mt-1 p-2 w-full border border-[#dedede] dark:border-darkBorder bg-[#f2f2f2] dark:bg-darkSecond focus:border-blue-500 focus:ring-2 outline-none rounded-md"
+                              className="relative flex-1"
+                              nameInput="Lần cuối đăng nhập"
+                              disabled
+                            />
+                          </div>
+                        </div>
+                        <div className="text-center w-[30%]">
+                          <div className="p-2 px-4 bg-white inline-block  text-black border-blue-500 border rounded-md">
+                            {googleId !== "" ? (
+                              <div className="flex items-center gap-1">
+                                <img src={IconGoogle} alt="Icon" className="w-6 h-6" />
+                                <span> Tài khoản google</span>
+                              </div>
+                            ) : (
+                              <div className="flex items-center gap-1">
+                                <img src={Icon2} alt="Icon" className="w-6 h-6" />
+                                <span>Tài khoản</span>
+                              </div>
+                            )}
+                          </div>
+                          <div className="mb-2 mt-4">Avatar</div>
+                          <img
+                            src={previewImage || avatarWatch}
+                            className="h-28 w-28 rounded-full mx-auto"
+                            alt="avatar default"
+                            referrerPolicy="no-referrer"
+                          />
+                          {googleId !== "" ? (
+                            <div>
+                              <span className="block mt-2 text-[13px]">
+                                Maximum file size is 1 MB Format: .JPEG, .PNG
+                              </span>
+                              <Button
+                                type="button"
+                                nameButton="Chọn file"
+                                classNameButton="px-4 py-2 bg-blue-500 mt-2 text-white font-semibold rounded-sm hover:bg-blue-500/80 duration-200"
+                                disabled
+                              />
+                            </div>
+                          ) : (
+                            <InputFileImage onChange={handleChangeImage} />
+                          )}
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-end">
+                        <Button
+                          type="submit"
+                          nameButton="Cập nhật"
+                          classNameButton="w-[120px] p-4 py-2 bg-blue-500 mt-2 w-full text-white font-semibold rounded-sm hover:bg-blue-500/80 duration-200"
+                        />
                       </div>
                     </div>
-                    <div className="flex items-center justify-end">
-                      <Button
-                        type="submit"
-                        nameButton="Cập nhật"
-                        classNameButton="w-[120px] p-4 py-2 bg-blue-500 mt-2 w-full text-white font-semibold rounded-sm hover:bg-blue-500/80 duration-200"
-                      />
-                    </div>
-                  </div>
-                </form>
-              </div>
-            </Fragment>
-          ) : (
-            ""
-          )}
-        </div>
+                  </form>
+                </div>
+              </Fragment>
+            ) : (
+              ""
+            )}
+          </div>
 
-        <div>{isAdd ? <AddUser setIsAdd={setIsAdd} fetchUsers={fetchUsers} /> : ""}</div>
-      </div>
+          <div>{isAdd ? <AddUser setIsAdd={setIsAdd} fetchUsers={fetchUsers} /> : ""}</div>
+        </div>
+      </motion.div>
     </div>
   )
 }
