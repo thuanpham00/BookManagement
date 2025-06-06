@@ -1,9 +1,9 @@
 import { collection, getDocs, doc, updateDoc, addDoc, deleteDoc } from "firebase/firestore"
 import { useEffect, useState } from "react"
-import { db } from "src/firebase"
 import { motion, AnimatePresence } from "framer-motion"
 import { Edit, Plus, Trash } from "lucide-react"
-
+import { db, functions } from "src/firebase"
+import { httpsCallable } from "firebase/functions"
 interface Notification {
   id: string
   title: string
@@ -84,8 +84,20 @@ export default function ManageNotifications() {
     }
   }
 
+  // Lấy danh sách FCM tokens từ Firestore
+  const getFcmTokens = async () => {
+    const querySnapshot = await getDocs(collection(db, "users"))
+    const tokens = querySnapshot.docs.map((doc) => doc.data().fcmToken).filter((token) => token) // Lọc bỏ token không hợp lệ (null/undefined)
+    return tokens
+  }
+
+  // Gửi thông báo qua Cloud Function
+  const sendNotification = httpsCallable(functions, "sendNotification")
+
   const handleSubmit = async () => {
     try {
+      let newMessage = ""
+
       if (isCreating) {
         const newNotification = {
           title: formData.title,
@@ -96,6 +108,7 @@ export default function ManageNotifications() {
         }
         const docRef = await addDoc(collection(db, "notifications"), newNotification)
         setNotifications([{ id: docRef.id, ...newNotification }, ...notifications])
+        newMessage = formData.message // Lấy message để gửi thông báo
       } else if (selectedNotification) {
         const notificationRef = doc(db, "notifications", selectedNotification.id)
         await updateDoc(notificationRef, {
@@ -110,6 +123,16 @@ export default function ManageNotifications() {
             notif.id === selectedNotification.id ? { ...notif, ...formData, timestamp: new Date() } : notif
           )
         )
+        newMessage = formData.message // Lấy message để gửi thông báo
+        console.log(newMessage)
+      }
+
+      // Sau khi tạo hoặc cập nhật thông báo, gửi thông báo qua FCM
+      const tokens = await getFcmTokens()
+      if (tokens.length > 0) {
+        await sendNotification({ tokens, message: newMessage || "Thông báo từ React" })
+      } else {
+        console.log("Không có FCM token để gửi thông báo")
       }
 
       setIsModalOpen(false)
@@ -191,7 +214,7 @@ export default function ManageNotifications() {
                     <span
                       className={`px-2 py-1 rounded-full text-xs ${notification.read ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}
                     >
-                      {notification.read ? "Đã đọc" : "Chưa đọc"}
+                      {notification.read ? "Đã gửi" : "Chưa gửi"}
                     </span>
                   </td>
                   <td className="px-3 py-4">

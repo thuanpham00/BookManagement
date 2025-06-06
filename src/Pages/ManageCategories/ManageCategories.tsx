@@ -149,7 +149,7 @@ export default function ManageCategories() {
         </h2>
         <button
           onClick={() => setIsAdd((prev) => !prev)}
-          className="bg-gradient-to-r from-blue-500 to-indigo-500 text-white px-6 py-3 rounded-full shadow-lg flex items-center gap-2 hover:from-blue-600 hover:to-indigo-600 transition-all"
+          className="bg-gradient-to-r from-blue-500 to-indigo-500 text-white px-4 py-2 rounded-full shadow-lg flex items-center gap-2 hover:from-blue-600 hover:to-indigo-600 transition-all"
         >
           <Plus />
           Thêm thể loại
@@ -162,11 +162,21 @@ export default function ManageCategories() {
       >
         <div className="mt-2">
           <div className="bg-gradient-to-r from-blue-50 to-indigo-50 grid grid-cols-5 items-center gap-2 py-3 border border-[#dedede] px-4 rounded-tl-xl rounded-tr-xl">
-            <div className="col-span-1 text-[14px] font-semibold">Id</div>
-            <div className="col-span-1 text-[14px] font-semibold">Tên thể loại</div>
-            <div className="col-span-1 text-[14px] font-semibold">Mô tả</div>
-            <div className="col-span-1 text-[14px] text-center font-semibold">Số lượng tài liệu</div>
-            <div className="col-span-1 text-[14px] text-center font-semibold">Hành động</div>
+            <div className="col-span-1 text-[14px] py-2 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider">
+              Id
+            </div>
+            <div className="col-span-1 text-[14px] py-2 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider">
+              Tên thể loại
+            </div>
+            <div className="col-span-1 text-[14px] py-2 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider">
+              Mô tả
+            </div>
+            <div className="col-span-1 text-[14px] py-2 text-center text-sm font-semibold text-gray-700 uppercase tracking-wider">
+              Số lượng tài liệu
+            </div>
+            <div className="col-span-1 text-[14px] py-2 text-center text-sm font-semibold text-gray-700 uppercase tracking-wider">
+              Hành động
+            </div>
           </div>
           <div>
             {categories.length > 0 ? (
@@ -238,8 +248,8 @@ export default function ManageCategories() {
                       <div className="flex items-center justify-end">
                         <Button
                           type="submit"
-                          nameButton="Cập nhật"
-                          classNameButton="w-[120px] p-4 py-2 bg-blue-500 mt-2 w-full text-white font-semibold rounded-sm hover:bg-blue-500/80 duration-200"
+                          nameButton="Cập nhật thể loại"
+                          classNameButton="mt-4 bg-gradient-to-r from-blue-500 to-indigo-500 text-white px-4 py-2 rounded-full shadow-lg flex items-center gap-2 hover:from-blue-600 hover:to-indigo-600 transition-all font-semibold"
                         />
                       </div>
                     </div>
@@ -303,7 +313,7 @@ export default function ManageCategories() {
                         <Button
                           type="submit"
                           nameButton="Thêm thể loại"
-                          classNameButton="w-[150px] py-2 bg-blue-500 mt-2 w-full text-white font-semibold rounded-sm hover:bg-blue-500/80 duration-200"
+                          classNameButton="mt-4 bg-gradient-to-r from-blue-500 to-indigo-500 text-white px-4 py-2 rounded-full shadow-lg flex items-center gap-2 hover:from-blue-600 hover:to-indigo-600 transition-all font-semibold"
                         />
                       </div>
                     </div>

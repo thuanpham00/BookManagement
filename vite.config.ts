@@ -8,7 +8,14 @@ import path from "path"
 export default defineConfig({
   plugins: [react()],
   server: {
-    port: 3600 // có thể thay port khác
+    port: 3600, // có thể thay port khác
+    proxy: {
+      "/sendNotificationCallable": {
+        target: "https://us-central1-readify-app-959fe.cloudfunctions.net",
+        changeOrigin: true,
+        secure: false
+      }
+    }
   },
   css: {
     devSourcemap: true // thể hiện đường dẫn src map css

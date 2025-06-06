@@ -216,7 +216,7 @@ export default function ManageUsers() {
         <div className="flex justify-end">
           <button
             onClick={() => setIsAdd((prev) => !prev)}
-            className="bg-gradient-to-r from-blue-500 to-indigo-500 text-white px-6 py-3 rounded-full shadow-lg flex items-center gap-2 hover:from-blue-600 hover:to-indigo-600 transition-all font-semibold"
+            className="bg-gradient-to-r from-blue-500 to-indigo-500 text-white px-4 py-2 rounded-full shadow-lg flex items-center gap-2 hover:from-blue-600 hover:to-indigo-600 transition-all font-semibold"
           >
             <Plus /> Thêm người dùng
           </button>
@@ -229,13 +229,27 @@ export default function ManageUsers() {
       >
         <div>
           <div className="bg-gradient-to-r from-blue-50 to-indigo-50 grid grid-cols-8 items-center gap-2 py-3 border border-[#dedede] px-4 rounded-tl-xl rounded-tr-xl">
-            <div className="col-span-1 text-[14px] font-semibold">Id</div>
-            <div className="col-span-1 text-[14px] font-semibold">Họ Tên</div>
-            <div className="col-span-1 text-[14px] font-semibold">Email</div>
-            <div className="col-span-1 text-[14px] text-center font-semibold">Loại tài khoản</div>
-            <div className="col-span-2 text-[14px] text-center font-semibold">Địa chỉ</div>
-            <div className="col-span-1 text-[14px] font-semibold">Lần cuối đăng nhập</div>
-            <div className="col-span-1 text-[14px] text-center font-semibold">Hành động</div>
+            <div className="col-span-1 py-2 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider">
+              Id
+            </div>
+            <div className="col-span-1 py-2 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider">
+              Họ Tên
+            </div>
+            <div className="col-span-1 py-2 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider">
+              Email
+            </div>
+            <div className="col-span-1 py-2 text-center text-sm font-semibold text-gray-700 uppercase tracking-wider ">
+              Loại tài khoản
+            </div>
+            <div className="col-span-2 py-2 text-center text-sm font-semibold text-gray-700 uppercase tracking-wider ">
+              Địa chỉ
+            </div>
+            <div className="col-span-1 py-2 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider">
+              Lần cuối đăng nhập
+            </div>
+            <div className="col-span-1 text-[14px] text-center py-2 text-sm font-semibold text-gray-700 uppercase tracking-wider">
+              Hành động
+            </div>
           </div>
           <div>
             {users.length > 0 ? (

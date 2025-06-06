@@ -52,13 +52,11 @@ export const schemaDocument = yup.object({
   language: yup.string().required("Ngôn ngữ bắt buộc!"),
   pageCount: yup
     .number()
-    .transform((value, originalValue) => (originalValue === "" ? undefined : Number(originalValue)))
+    .transform((originalValue) => (originalValue === "" ? undefined : Number(originalValue)))
     .required("Số trang tài liệu bắt buộc!"),
   publishDate: yup.string().required("Ngày xuất bản bắt buộc!"),
   title: yup.string().required("Tựa đề bắt buộc!"),
-  viewCount: yup
-    .number()
-    .transform((value, originalValue) => (originalValue === "" ? undefined : Number(originalValue)))
+  viewCount: yup.number().transform((originalValue) => (originalValue === "" ? undefined : Number(originalValue)))
 })
 
 export type SchemaDocumentType = yup.InferType<typeof schemaDocument>
