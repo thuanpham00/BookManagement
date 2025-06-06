@@ -8,7 +8,7 @@ import { Plus, X } from "lucide-react"
 import { Controller, useForm } from "react-hook-form"
 import Input from "src/Components/Input"
 import Button from "src/Components/Button"
-import { SchemaUserType } from "src/Helpers/rule"
+import { schemaUser, SchemaUserType } from "src/Helpers/rule"
 import DateSelect from "src/Components/DateSelect"
 import { formatDate } from "src/Helpers/common"
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage"
@@ -19,6 +19,7 @@ import Icon2 from "src/Assets/img/icon.png"
 import { toast } from "react-toastify"
 import AddUser from "./Components/AddUser"
 import { motion } from "framer-motion"
+import { yupResolver } from "@hookform/resolvers/yup"
 
 type FormDataUpdate = Pick<
   SchemaUserType,
@@ -26,14 +27,16 @@ type FormDataUpdate = Pick<
   | "fullName"
   | "email"
   | "accountType"
-  | "fcmToken"
-  | "address"
   | "dateOfBirth"
+  | "address"
+  | "fcmToken"
   | "createdAt"
   | "lastLogin"
   | "avatar"
   | "googleId"
 >
+
+const formDataUpdate = schemaUser.pick(["fullName", "email", "address"])
 
 export default function ManageUsers() {
   const [users, setUsers] = useState<User[]>([])
@@ -41,7 +44,7 @@ export default function ManageUsers() {
 
   const fetchUsers = async () => {
     try {
-      const querySnapshot = await getDocs(collection(db, "users"))
+      const querySnapshot = await getDocs(collection(db, "users")) // đọc collection users
       const usersData: User[] = querySnapshot.docs.map((doc) => {
         const data = doc.data()
         return {
@@ -50,7 +53,6 @@ export default function ManageUsers() {
           email: data.email || "",
           accountType: data.accountType || "",
           address: data.address || "",
-          dateOfBirth: data.dateOfBirth?.toDate?.(),
           lastLogin: data.lastLogin?.toDate?.() || new Date()
         }
       })
@@ -67,6 +69,7 @@ export default function ManageUsers() {
   }, [])
 
   const [userId, setUserId] = useState<string | null>(null)
+
   const handleEditItem = useCallback((id: string) => {
     setUserId(id)
   }, [])
@@ -94,7 +97,8 @@ export default function ManageUsers() {
       googleId: "",
       createdAt: "",
       lastLogin: ""
-    }
+    },
+    resolver: yupResolver(formDataUpdate)
   })
 
   useEffect(() => {
@@ -224,13 +228,12 @@ export default function ManageUsers() {
         className="bg-white rounded-2xl shadow-xl overflow-hidden"
       >
         <div>
-          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 grid grid-cols-12 items-center gap-2 py-3 border border-[#dedede] px-4 rounded-tl-xl rounded-tr-xl">
-            <div className="col-span-2 text-[14px] font-semibold">Id</div>
-            <div className="col-span-2 text-[14px] font-semibold">Họ Tên</div>
-            <div className="col-span-2 text-[14px] font-semibold">Email</div>
+          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 grid grid-cols-8 items-center gap-2 py-3 border border-[#dedede] px-4 rounded-tl-xl rounded-tr-xl">
+            <div className="col-span-1 text-[14px] font-semibold">Id</div>
+            <div className="col-span-1 text-[14px] font-semibold">Họ Tên</div>
+            <div className="col-span-1 text-[14px] font-semibold">Email</div>
             <div className="col-span-1 text-[14px] text-center font-semibold">Loại tài khoản</div>
             <div className="col-span-2 text-[14px] text-center font-semibold">Địa chỉ</div>
-            <div className="col-span-1 text-[14px] font-semibold">Ngày sinh</div>
             <div className="col-span-1 text-[14px] font-semibold">Lần cuối đăng nhập</div>
             <div className="col-span-1 text-[14px] text-center font-semibold">Hành động</div>
           </div>
@@ -278,6 +281,17 @@ export default function ManageUsers() {
                           </div>
                           <div className="col-span-3">
                             <Input
+                              name="accountType"
+                              register={register}
+                              messageErrorInput={errors.accountType?.message}
+                              classNameInput="mt-1 p-2 w-full border border-[#dedede] dark:border-darkBorder bg-[#f2f2f2] dark:bg-darkSecond focus:border-blue-500 focus:ring-2 outline-none rounded-md"
+                              className="relative flex-1"
+                              nameInput="Loại tài khoản"
+                              disabled
+                            />
+                          </div>
+                          <div className="col-span-6">
+                            <Input
                               name="fullName"
                               register={register}
                               placeholder="Nhập họ tên"
@@ -297,17 +311,6 @@ export default function ManageUsers() {
                               classNameInput="mt-1 p-2 w-full border border-[#dedede] dark:border-darkBorder bg-[#f2f2f2] dark:bg-darkSecond focus:border-blue-500 focus:ring-2 outline-none rounded-md"
                               className="relative flex-1"
                               nameInput="Email"
-                              disabled
-                            />
-                          </div>
-                          <div className="col-span-6">
-                            <Input
-                              name="accountType"
-                              register={register}
-                              messageErrorInput={errors.accountType?.message}
-                              classNameInput="mt-1 p-2 w-full border border-[#dedede] dark:border-darkBorder bg-[#f2f2f2] dark:bg-darkSecond focus:border-blue-500 focus:ring-2 outline-none rounded-md"
-                              className="relative flex-1"
-                              nameInput="Loại tài khoản"
                               disabled
                             />
                           </div>
@@ -411,8 +414,8 @@ export default function ManageUsers() {
                       <div className="flex items-center justify-end">
                         <Button
                           type="submit"
-                          nameButton="Cập nhật"
-                          classNameButton="w-[120px] p-4 py-2 bg-blue-500 mt-2 w-full text-white font-semibold rounded-sm hover:bg-blue-500/80 duration-200"
+                          nameButton="Cập nhật người dùng"
+                          classNameButton="bg-gradient-to-r from-blue-500 to-indigo-500 text-white px-4 py-2 rounded-full shadow-lg flex items-center gap-2 hover:from-blue-600 hover:to-indigo-600 transition-all font-semibold"
                         />
                       </div>
                     </div>

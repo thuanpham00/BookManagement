@@ -94,7 +94,7 @@ export default function DateSelect({ onChange, errorMessage, value, googleId }: 
             ))}
           </select>
         </div>
-        <div className="text-red-500 text-[13px] font-semibold min-h-[1.25rem] block">{errorMessage}</div>
+        <div className="mt-1 text-red-500 text-[13px] font-semibold min-h-[1.25rem] block">{errorMessage}</div>
       </div>
     </div>
   )

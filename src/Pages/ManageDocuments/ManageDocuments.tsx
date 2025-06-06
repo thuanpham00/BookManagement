@@ -108,9 +108,11 @@ export default function ManageDocuments() {
   }, [])
 
   const [documentId, setDocumentId] = useState<string | null>(null)
+
   const handleEditItem = useCallback((id: string) => {
     setDocumentId(id)
   }, [])
+
   const handleExitsEditItem = () => {
     setDocumentId(null)
     setFileImage(null)
@@ -147,7 +149,6 @@ export default function ManageDocuments() {
         const docSnap = await getDoc(docRef)
         const data = docSnap.data() as DocumentData
 
-        console.log(data?.isPremium)
         setValue("id", documentId)
         setValue("author", data?.author || "")
         setValue("title", data?.title || "")
@@ -189,6 +190,7 @@ export default function ManageDocuments() {
     }
   }, [documentId, setValue])
 
+  // xử lý state với file ảnh
   const [fileImage, setFileImage] = useState<File | null>()
 
   const previewImage = useMemo(() => {
@@ -199,6 +201,7 @@ export default function ManageDocuments() {
     setFileImage(file)
   }
 
+  // xử lý state với file pdf
   const [filePDF, setFilePDF] = useState<File | null>()
 
   const previewFilePDF = useMemo(() => {
@@ -271,7 +274,7 @@ export default function ManageDocuments() {
       if (fileImage) {
         const imageRef = ref(storage, `biasach/${fileImage.name}`)
         await uploadBytes(imageRef, fileImage)
-        coverImagePath = imageRef.fullPath
+        coverImagePath = imageRef.fullPath // đường dẫn thư mục
         updatedData.coverImage = coverImagePath
       }
 
@@ -280,7 +283,7 @@ export default function ManageDocuments() {
       if (filePDF) {
         const fileRef = ref(storage, `books/${filePDF.name}`)
         await uploadBytes(fileRef, filePDF)
-        fileUrlPath = fileRef.fullPath
+        fileUrlPath = fileRef.fullPath // đường dẫn thư mục
         updatedData.fileUrl = fileUrlPath
       }
 
@@ -295,6 +298,7 @@ export default function ManageDocuments() {
       toast.error("Cập nhật tài liệu thất bại")
     }
   }
+
   const [isAdd, setIsAdd] = useState<boolean>(false)
 
   if (loading) return <p>Đang tải tài liệu...</p>
@@ -503,7 +507,7 @@ export default function ManageDocuments() {
                           <div className="mb-2">Ảnh bìa</div>
                           <img
                             src={previewImage || coverImageWatch}
-                            className="h-[200px] w-[170px] mx-auto rounded-sm"
+                            className="h-[230px] w-[170px] mx-auto rounded-sm"
                             alt="avatar default"
                           />
                           <InputFileImage onChange={handleChangeImage} />
@@ -524,8 +528,8 @@ export default function ManageDocuments() {
                       <div className="flex items-center justify-end">
                         <Button
                           type="submit"
-                          nameButton="Cập nhật"
-                          classNameButton="w-[120px] p-4 py-2 bg-blue-500 mt-2 w-full text-white font-semibold rounded-sm hover:bg-blue-500/80 duration-200"
+                          nameButton="Cập nhật tài liệu"
+                          classNameButton="bg-gradient-to-r from-blue-500 to-indigo-500 text-white px-4 py-2 rounded-full shadow-lg flex items-center gap-2 hover:from-blue-600 hover:to-indigo-600 transition-all font-semibold"
                         />
                       </div>
                     </div>

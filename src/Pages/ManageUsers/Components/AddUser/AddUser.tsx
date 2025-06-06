@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { X } from "lucide-react"
 import { useMemo, useState } from "react"
 import { Controller, useForm } from "react-hook-form"
@@ -21,7 +22,7 @@ type FormDataAdd = Pick<
   "email" | "address" | "avatar" | "createdAt" | "dateOfBirth" | "fullName" | "password"
 >
 
-const formDataAdd = schemaAddUser.pick(["fullName", "email", "address", "password"])
+const formDataAdd = schemaAddUser.pick(["fullName", "email", "address", "password", "dateOfBirth"])
 
 export default function AddUser({
   setIsAdd,
@@ -42,14 +43,14 @@ export default function AddUser({
     setIsAdd(false)
   }
 
-  const [file, setFile] = useState<File>()
+  const [file, setFile] = useState<File | null>(null)
 
   const previewImage = useMemo(() => {
     return file ? URL.createObjectURL(file) : ""
   }, [file])
 
   const handleChangeImage = (file?: File) => {
-    setFile(file)
+    setFile(file as File)
   }
 
   const handleAddUser = handleSubmitAdd(async (data) => {
@@ -60,6 +61,7 @@ export default function AddUser({
       let avatarUrl = AvatarDefault
       const specificDate = new Date()
       const timestamp = Timestamp.fromDate(specificDate)
+      console.log(errors.fullName?.message)
       if (file) {
         const storageRef = ref(storage, `avatar/${file.name}`)
         await uploadBytes(storageRef, file)
@@ -87,9 +89,8 @@ export default function AddUser({
       // Chuyển đổi ngày giờ thành Timestamp
       fetchUsers()
       reset()
-      setFile(undefined)
+      setFile(null)
       setIsAdd(false)
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       if (error.code === "auth/email-already-in-use") {
         toast.error("Email đã được sử dụng. Vui lòng chọn email khác.", {
@@ -186,7 +187,7 @@ export default function AddUser({
               <Button
                 type="submit"
                 nameButton="Thêm người dùng"
-                classNameButton="px-2 py-2 bg-blue-500 mt-2 w-full text-white font-semibold rounded-sm hover:bg-blue-500/80 duration-200"
+                classNameButton="bg-gradient-to-r from-blue-500 to-indigo-500 text-white px-4 py-2 rounded-full shadow-lg flex items-center gap-2 hover:from-blue-600 hover:to-indigo-600 transition-all font-semibold"
               />
             </div>
           </div>

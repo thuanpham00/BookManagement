@@ -151,6 +151,18 @@ export default function AddDocument({
     }
   })
 
+  // xử lý tên file
+  const decodedUrl = decodeURIComponent(previewFilePDF)
+  const fileName = useMemo(() => {
+    if (filePDF) return filePDF.name
+    if (decodedUrl) {
+      const parts = decodedUrl.split("/")
+      const lastPart = parts[parts.length - 1]
+      return lastPart.split("?")[0]
+    }
+    return ""
+  }, [filePDF, decodedUrl])
+
   return (
     <Fragment>
       <div className="fixed left-0 top-0 z-10 h-screen w-screen bg-black/60"></div>
@@ -312,8 +324,7 @@ export default function AddDocument({
                     className="mt-2 inline-flex items-center justify-center p-2 border border-gray-300 rounded-md hover:bg-[#dedede] duration-200"
                     rel="noreferrer"
                   >
-                    <div>Xem file</div>
-                    {/* {fileName} */}
+                    {fileName}
                   </a>
                 )}
                 <InputFileImage file={true} onChange={handleChangeFile} />

@@ -2,11 +2,11 @@ import * as yup from "yup"
 
 export const schemaUser = yup.object({
   id: yup.string(),
-  fullName: yup.string(),
+  fullName: yup.string().required("Họ tên bắt buộc!"),
   email: yup.string(),
   accountType: yup.string(),
   fcmToken: yup.string(),
-  address: yup.string(),
+  address: yup.string().required("Địa chỉ bắt buộc"),
   dateOfBirth: yup.date().max(new Date(), "Hãy chọn một ngày trong quá khứ!"),
   createdAt: yup.string(),
   lastLogin: yup.string(),
