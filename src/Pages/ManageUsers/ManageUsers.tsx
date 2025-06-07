@@ -406,7 +406,7 @@ export default function ManageUsers() {
                               <Input
                                 name="resetPassword"
                                 register={register}
-                                classNameInput="mt-1 p-2 w-full border border-[#dedede] dark:border-darkBorder bg-[#f2f2f2] dark:bg-darkSecond focus:border-blue-500 focus:ring-2 outline-none rounded-md"
+                                classNameInput="mt-1 p-2 w-full border border-[#dedede] dark:border-darkBorder bg-[#fff] dark:bg-darkSecond focus:border-blue-500 focus:ring-2 outline-none rounded-md"
                                 className="relative flex-1"
                                 nameInput="Reset mật khẩu"
                                 type="password"
