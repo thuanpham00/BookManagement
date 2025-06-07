@@ -146,9 +146,6 @@ export default function ManageNotifications() {
   const handleSendNotification = async () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const tokens = (await getFcmTokens()).filter((t: any) => typeof t === "string" && t.length > 0)
-    // console.log(typeNotification)
-    // console.log(title)
-    // console.log(message)
 
     const payload = {
       tokens,
