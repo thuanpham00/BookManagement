@@ -1,38 +1,31 @@
 const functions = require("firebase-functions")
 const admin = require("firebase-admin")
-const cors = require("cors")({ origin: true })
 
 admin.initializeApp()
 
-exports.sendNotification = functions.https.onRequest((req: any, res: any) => {
-  return cors(req, res, async () => {
-    const { tokens, message } = req.body
-    console.log(tokens)
-    if (!tokens || !Array.isArray(tokens) || tokens.length === 0) {
-      return res.status(400).send("Danh sách tokens không hợp lệ hoặc trống")
-    }
+exports.sendNotification = functions.https.onCall(async (data: any, context: any) => {
+  // Nếu dữ liệu nằm trong data.data
+  const payload = data.data ? data.data : data
+  const { tokens, notification } = payload
+  if (!tokens || !Array.isArray(tokens) || tokens.length === 0) {
+    throw new functions.https.HttpsError("invalid-argument", "Danh sách tokens không hợp lệ hoặc trống")
+  }
+  if (!notification || typeof notification.body !== "string") {
+    throw new functions.https.HttpsError("invalid-argument", "Notification phải có body là chuỗi")
+  }
 
-    if (!message || typeof message !== "string") {
-      return res.status(400).send("Message phải là chuỗi không rỗng")
-    }
+  const multicastMessage = {
+    tokens,
+    notification
+  }
 
-    const multicastMessage = {
-      tokens,
-      notification: {
-        title: "Thông báo",
-        body: message
-      }
+  try {
+    const response = await admin.messaging().sendEachForMulticast(multicastMessage)
+    return {
+      successCount: response.successCount,
+      failureCount: response.failureCount
     }
-
-    try {
-      const response = await admin.messaging().sendEachForMulticast(multicastMessage)
-      res.json({
-        successCount: response.successCount,
-        failureCount: response.failureCount
-      })
-    } catch (error) {
-      console.error("Lỗi gửi thông báo:", error)
-      res.status(500).send("Lỗi gửi thông báo")
-    }
-  })
+  } catch (error) {
+    throw new functions.https.HttpsError("internal", "Lỗi gửi thông báo")
+  }
 })

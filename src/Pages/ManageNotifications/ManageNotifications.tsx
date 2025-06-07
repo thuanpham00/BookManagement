@@ -1,7 +1,7 @@
 import { collection, getDocs, doc, updateDoc, addDoc, deleteDoc } from "firebase/firestore"
 import { useEffect, useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { Edit, Plus, Trash } from "lucide-react"
+import { Pencil, Plus, Send, Trash } from "lucide-react"
 import { db, functions } from "src/firebase"
 import { httpsCallable } from "firebase/functions"
 interface Notification {
@@ -87,16 +87,23 @@ export default function ManageNotifications() {
   // Lấy danh sách FCM tokens từ Firestore
   const getFcmTokens = async () => {
     const querySnapshot = await getDocs(collection(db, "users"))
-    const tokens = querySnapshot.docs.map((doc) => doc.data().fcmToken).filter((token) => token) // Lọc bỏ token không hợp lệ (null/undefined)
+    const tokens = querySnapshot.docs.map((doc) => doc.data().fcmToken).filter((token) => token)
     return tokens
   }
 
   // Gửi thông báo qua Cloud Function
   const sendNotification = httpsCallable(functions, "sendNotification")
+  const [typeNotification, setTypeNotification] = useState("")
 
   const handleSubmit = async () => {
     try {
-      let newMessage = ""
+      if (formData.type === "system") {
+        setTypeNotification("[Thông báo hệ thống] ")
+      } else if (formData.type === "user") {
+        setTypeNotification("[Thông báo người dùng] ")
+      } else {
+        setTypeNotification("[Thông báo cảnh báo] ")
+      }
 
       if (isCreating) {
         const newNotification = {
@@ -108,7 +115,6 @@ export default function ManageNotifications() {
         }
         const docRef = await addDoc(collection(db, "notifications"), newNotification)
         setNotifications([{ id: docRef.id, ...newNotification }, ...notifications])
-        newMessage = formData.message // Lấy message để gửi thông báo
       } else if (selectedNotification) {
         const notificationRef = doc(db, "notifications", selectedNotification.id)
         await updateDoc(notificationRef, {
@@ -123,16 +129,6 @@ export default function ManageNotifications() {
             notif.id === selectedNotification.id ? { ...notif, ...formData, timestamp: new Date() } : notif
           )
         )
-        newMessage = formData.message // Lấy message để gửi thông báo
-        console.log(newMessage)
-      }
-
-      // Sau khi tạo hoặc cập nhật thông báo, gửi thông báo qua FCM
-      const tokens = await getFcmTokens()
-      if (tokens.length > 0) {
-        await sendNotification({ tokens, message: newMessage || "Thông báo từ React" })
-      } else {
-        console.log("Không có FCM token để gửi thông báo")
       }
 
       setIsModalOpen(false)
@@ -141,7 +137,29 @@ export default function ManageNotifications() {
       resetForm()
     } catch (error) {
       console.error("Lỗi khi xử lý thông báo:", error)
+      if (error instanceof Error) {
+        console.error("Error message:", error.message)
+      }
     }
+  }
+
+  const handleSendNotification = async () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const tokens = (await getFcmTokens()).filter((t: any) => typeof t === "string" && t.length > 0)
+    // console.log(typeNotification)
+    // console.log(title)
+    // console.log(message)
+
+    const payload = {
+      tokens,
+      notification: {
+        title: typeNotification + formData.title,
+        body: formData.message
+      }
+    }
+    formData.read = true
+    const result = await sendNotification(payload)
+    console.log(result)
   }
 
   if (loading)
@@ -164,7 +182,7 @@ export default function ManageNotifications() {
         <motion.button
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
-          className="bg-gradient-to-r from-blue-500 to-indigo-500 text-white px-6 py-3 rounded-full shadow-lg flex items-center gap-2 hover:from-blue-600 hover:to-indigo-600 transition-all font-semibold"
+          className="bg-gradient-to-r from-blue-500 to-indigo-500 text-white px-4 py-2 rounded-full shadow-lg flex items-center gap-2 hover:from-blue-600 hover:to-indigo-600 transition-all font-semibold"
           onClick={() => {
             setIsCreating(true)
             resetForm()
@@ -212,7 +230,7 @@ export default function ManageNotifications() {
                   <td className="px-3 py-4 text-gray-600">{notification.timestamp.toLocaleString()}</td>
                   <td className="px-3 py-4">
                     <span
-                      className={`px-2 py-1 rounded-full text-xs ${notification.read ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}
+                      className={`px-2 py-1 rounded-full text-xs font-semibold ${notification.read ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}
                     >
                       {notification.read ? "Đã gửi" : "Chưa gửi"}
                     </span>
@@ -225,7 +243,7 @@ export default function ManageNotifications() {
                         onClick={() => handleEditClick(notification)}
                         className="text-yellow-500 hover:text-yellow-700"
                       >
-                        <Edit size={18} />
+                        <Pencil color="orange" size={18} />
                       </motion.button>
                       <motion.button
                         whileHover={{ scale: 1.1 }}
@@ -293,16 +311,6 @@ export default function ManageNotifications() {
                   />
                 </div>
                 <div>
-                  <div className="block text-sm font-medium text-gray-700 mb-2">Nội dung</div>
-                  <textarea
-                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
-                    placeholder="Nội dung thông báo"
-                    rows={4}
-                    value={formData.message}
-                    onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                  />
-                </div>
-                <div>
                   <div className="block text-sm font-medium text-gray-700 mb-2">Loại thông báo</div>
                   <select
                     className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
@@ -314,19 +322,35 @@ export default function ManageNotifications() {
                     <option value="alert">Cảnh báo</option>
                   </select>
                 </div>
+
+                {!isCreating && (
+                  <div>
+                    <div className="block text-sm font-medium text-gray-700 mb-2">Trạng thái</div>
+                    <select
+                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                      value={formData.read ? "read" : "unread"}
+                      onChange={(e) => setFormData({ ...formData, read: e.target.value === "read" })}
+                      disabled
+                    >
+                      <option value="unread">Chưa đọc</option>
+                      <option value="read">Đã đọc</option>
+                    </select>
+                  </div>
+                )}
+
+                <div>
+                  <div className="block text-sm font-medium text-gray-700 mb-2">Nội dung</div>
+                  <textarea
+                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                    placeholder="Nội dung thông báo"
+                    rows={4}
+                    value={formData.message}
+                    onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                  />
+                </div>
+
                 {!isCreating && (
                   <>
-                    <div>
-                      <div className="block text-sm font-medium text-gray-700 mb-2">Trạng thái</div>
-                      <select
-                        className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
-                        value={formData.read ? "read" : "unread"}
-                        onChange={(e) => setFormData({ ...formData, read: e.target.value === "read" })}
-                      >
-                        <option value="unread">Chưa đọc</option>
-                        <option value="read">Đã đọc</option>
-                      </select>
-                    </div>
                     <div>
                       <div className="block text-sm font-medium text-gray-700 mb-2">Thời gian cập nhật</div>
                       <input
@@ -339,14 +363,25 @@ export default function ManageNotifications() {
                   </>
                 )}
               </div>
-              <div className="mt-6 flex justify-end">
+              <div className="mt-6 flex justify-between">
+                {!isCreating && (
+                  <button
+                    type="button"
+                    onClick={handleSendNotification}
+                    className="mt-4 bg-[#4f772d] text-white px-4 py-2 rounded-full shadow-lg flex items-center gap-2  hover:opacity-50 transition-all font-semibold"
+                  >
+                    <Send />
+                    <span>Gửi thông báo xuống người dùng</span>
+                  </button>
+                )}
+
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={handleSubmit}
-                  className="bg-gradient-to-r from-blue-500 to-indigo-500 text-white px-6 py-3 rounded-full shadow-lg hover:from-blue-600 hover:to-indigo-600 transition-all"
+                  className="bg-gradient-to-r from-blue-500 to-indigo-500 text-white px-4 py-2 rounded-full shadow-lg hover:from-blue-600 hover:to-indigo-600 transition-all font-semibold"
                 >
-                  {isCreating ? "Tạo" : "Cập nhật"}
+                  {isCreating ? "Thêm thông báo" : "Cập nhật thông báo"}
                 </motion.button>
               </div>
             </motion.div>

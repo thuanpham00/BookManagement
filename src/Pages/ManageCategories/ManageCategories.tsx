@@ -180,10 +180,16 @@ export default function ManageCategories() {
           </div>
           <div>
             {categories.length > 0 ? (
-              categories?.map((item) => (
-                <Fragment key={item.id}>
+              categories?.map((item, index) => (
+                <motion.div
+                  key={item.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.1 }}
+                  className="border-b hover:bg-gray-50 transition-colors"
+                >
                   <CategoryItem item={item} handleEditItem={handleEditItem} setCategories={setCategories} />
-                </Fragment>
+                </motion.div>
               ))
             ) : (
               <div className="text-center mt-4">Không tìm thấy kết quả</div>
