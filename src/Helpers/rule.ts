@@ -11,7 +11,8 @@ export const schemaUser = yup.object({
   createdAt: yup.string(),
   lastLogin: yup.string(),
   avatar: yup.string(),
-  googleId: yup.string()
+  googleId: yup.string(),
+  resetPassword: yup.string()
 })
 
 export type SchemaUserType = yup.InferType<typeof schemaUser>

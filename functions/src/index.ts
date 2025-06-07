@@ -29,3 +29,23 @@ exports.sendNotification = functions.https.onCall(async (data: any, context: any
     throw new functions.https.HttpsError("internal", "Lỗi gửi thông báo")
   }
 })
+
+exports.adminResetPassword = functions.https.onCall(async (data: any, context: any) => {
+  // Nếu dữ liệu nằm trong data.data
+  const payload = data.data ? data.data : data
+  const { uid, newPassword, secret } = payload
+  console.log(uid)
+
+  if (secret !== "thuanpham99@") {
+    throw new functions.https.HttpsError("permission-denied", "Bạn không có quyền.")
+  }
+
+  try {
+    const userRecord = await admin.auth().updateUser(uid, {
+      password: newPassword
+    })
+    return { success: true, uid: userRecord.uid }
+  } catch (error) {
+    throw new functions.https.HttpsError("internal", "Lỗi gửi thông báo")
+  }
+})

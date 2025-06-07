@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion"
 import { Pencil, Plus, Send, Trash } from "lucide-react"
 import { db, functions } from "src/firebase"
 import { httpsCallable } from "firebase/functions"
+import { toast } from "react-toastify"
 interface Notification {
   id: string
   title: string
@@ -157,6 +158,7 @@ export default function ManageNotifications() {
     formData.read = true
     const result = await sendNotification(payload)
     console.log(result)
+    toast.success("Đã gửi thông báo thành công xuống các thiết bị!", { autoClose: 1500 })
   }
 
   if (loading)

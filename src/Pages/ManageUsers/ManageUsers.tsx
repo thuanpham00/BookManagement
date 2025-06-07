@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { collection, doc, DocumentData, getDoc, getDocs, updateDoc } from "firebase/firestore"
 import { Fragment, useCallback, useEffect, useMemo, useState } from "react"
-import { db, storage } from "src/firebase"
+import { db, functions, storage } from "src/firebase"
 import { User } from "src/Types/user.type"
 import UserItem from "./Components/UserItem"
 import { Plus, X } from "lucide-react"
@@ -20,6 +20,7 @@ import { toast } from "react-toastify"
 import AddUser from "./Components/AddUser"
 import { motion } from "framer-motion"
 import { yupResolver } from "@hookform/resolvers/yup"
+import { httpsCallable } from "firebase/functions"
 
 type FormDataUpdate = Pick<
   SchemaUserType,
@@ -34,6 +35,7 @@ type FormDataUpdate = Pick<
   | "lastLogin"
   | "avatar"
   | "googleId"
+  | "resetPassword"
 >
 
 const formDataUpdate = schemaUser.pick(["fullName", "email", "address"])
@@ -107,6 +109,7 @@ export default function ManageUsers() {
         const docRef = doc(db, "users", userId)
         const docSnap = await getDoc(docRef)
         const data = docSnap.data() as DocumentData
+        console.log(data)
         let avatarUrl = ""
         try {
           if (data.avatar) {
@@ -158,6 +161,8 @@ export default function ManageUsers() {
     setFile(file)
   }
 
+  const adminResetPassword = httpsCallable(functions, "adminResetPassword")
+
   const handleUpdateUser = handleSubmit(async (data) => {
     if (!data.id) return
 
@@ -177,6 +182,16 @@ export default function ManageUsers() {
         dateOfBirth: data.dateOfBirth,
         avatar: avatarPath
       })
+
+      if (data.resetPassword) {
+        const result = await adminResetPassword({
+          uid: data.id,
+          newPassword: data.resetPassword,
+          secret: "thuanpham99@"
+        })
+        console.log("✅ Reset thành công:", result.data)
+        toast.success(`Reset mật khẩu thành công cho user ${data.id}`)
+      }
 
       setUsers((prev) =>
         prev.map((cat) =>
@@ -386,6 +401,18 @@ export default function ManageUsers() {
                               disabled
                             />
                           </div>
+                          {googleId === "" && (
+                            <div className="col-span-6">
+                              <Input
+                                name="resetPassword"
+                                register={register}
+                                classNameInput="mt-1 p-2 w-full border border-[#dedede] dark:border-darkBorder bg-[#f2f2f2] dark:bg-darkSecond focus:border-blue-500 focus:ring-2 outline-none rounded-md"
+                                className="relative flex-1"
+                                nameInput="Reset mật khẩu"
+                                type="password"
+                              />
+                            </div>
+                          )}
                         </div>
                         <div className="text-center w-[30%]">
                           <div className="p-2 px-4 bg-white inline-block  text-black border-blue-500 border rounded-md">
