@@ -510,6 +510,13 @@ export default function ManageDocuments() {
                                   }}
                                   className="basic-multi-select"
                                   classNamePrefix="select"
+                                  styles={{
+                                    menuList: (provided) => ({
+                                      ...provided,
+                                      maxHeight: 100, // chiều cao tối đa của danh sách dropdown (px)
+                                      overflowY: "auto"
+                                    })
+                                  }}
                                 />
                               )}
                             />
@@ -531,7 +538,6 @@ export default function ManageDocuments() {
                             className="mt-2 inline-flex items-center justify-center p-2 border border-gray-300 rounded-md hover:bg-[#dedede] duration-200"
                             rel="noreferrer"
                           >
-                            <div>Xem file</div>
                             {fileName}
                           </a>
                           <InputFileImage file={true} onChange={handleChangeFile} />

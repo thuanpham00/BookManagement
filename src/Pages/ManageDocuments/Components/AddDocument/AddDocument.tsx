@@ -287,6 +287,13 @@ export default function AddDocument({
                         }}
                         className="basic-multi-select"
                         classNamePrefix="select"
+                        styles={{
+                          menuList: (provided) => ({
+                            ...provided,
+                            maxHeight: 100, // chiều cao tối đa của danh sách dropdown (px)
+                            overflowY: "auto"
+                          })
+                        }}
                       />
                     )}
                   />
