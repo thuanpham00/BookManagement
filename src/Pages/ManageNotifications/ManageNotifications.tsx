@@ -492,7 +492,8 @@ export default function ManageNotifications() {
                   <button
                     type="button"
                     onClick={handleSendNotification}
-                    className="mt-4 bg-[#4f772d] text-white px-4 py-2 rounded-full shadow-lg flex items-center gap-2  hover:opacity-50 transition-all font-semibold"
+                    className={`mt-4 bg-[#4f772d] text-white px-4 py-2 rounded-full shadow-lg flex items-center gap-2  hover:opacity-50 transition-all font-semibold ${selectedNotification?.read ? "cursor-not-allowed" : ""}`}
+                    disabled={selectedNotification?.read ? true : false}
                   >
                     <Send />
                     <span>Gửi thông báo xuống người dùng</span>
