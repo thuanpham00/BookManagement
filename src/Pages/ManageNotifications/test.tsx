@@ -6,7 +6,6 @@ import { Pencil, Plus, Send, Trash } from "lucide-react"
 import { db, functions } from "src/firebase"
 import { httpsCallable } from "firebase/functions"
 import { toast } from "react-toastify"
-
 interface Notification {
   id: string
   title: string
@@ -14,10 +13,10 @@ interface Notification {
   timestamp: Date
   read: boolean
   type: string
-  scheduledAt?: Date | null
+  scheduledAt?: Date | null // Thêm trường thời gian gửi dự kiến
 }
 
-export default function ManageNotifications() {
+export default function Test() {
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [loading, setLoading] = useState(true)
   const [selectedNotification, setSelectedNotification] = useState<Notification | null>(null)
@@ -43,12 +42,7 @@ export default function ManageNotifications() {
             message: data.message || "",
             timestamp: data.timestamp?.toDate?.() || new Date(),
             read: data.read || false,
-            type: data.type || "system",
-            scheduledAt: data.scheduledAt
-              ? data.scheduledAt.toDate
-                ? data.scheduledAt.toDate()
-                : new Date(data.scheduledAt)
-              : null
+            type: data.type || "system"
           }
         })
         setNotifications(notificationsData)
@@ -79,19 +73,7 @@ export default function ManageNotifications() {
       message: notification.message,
       read: notification.read,
       type: notification.type,
-      scheduledAt: notification.scheduledAt
-        ? (() => {
-            // scheduledAt là Date, cần chuyển về local string cho input
-            // Đảm bảo hiển thị đúng local time
-            const date = new Date(notification.scheduledAt)
-            const year = date.getFullYear()
-            const month = String(date.getMonth() + 1).padStart(2, "0")
-            const day = String(date.getDate()).padStart(2, "0")
-            const hours = String(date.getHours()).padStart(2, "0")
-            const minutes = String(date.getMinutes()).padStart(2, "0")
-            return `${year}-${month}-${day}T${hours}:${minutes}`
-          })()
-        : ""
+      scheduledAt: notification.scheduledAt ? new Date(notification.scheduledAt).toISOString().slice(0, 16) : ""
     })
     setIsCreating(false)
     setIsModalOpen(true)

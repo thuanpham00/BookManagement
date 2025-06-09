@@ -3,6 +3,19 @@ const admin = require("firebase-admin")
 
 admin.initializeApp()
 
+/**
+ * Vì khi chạy trên Cloud Functions của Firebase, SDK firebase-admin đã:
+
+  Được gắn sẵn quyền server (IAM role) → Không cần bạn cung cấp key.
+
+- Tự kết nối với project Firebase hiện tại.
+- Có quyền gửi FCM thông qua admin.messaging().
+ */
+
+/**
+ * là ở web app tôi gửi 1 request lên dịch vụ functions của firebase, functions này là 1 dịch vụ trung gian nhận request từ web app sau đó chuyển lên fcm thông qua gói firebase-admin cấp quyền đặc biệt, và có gửi kèm tokens nên khi lên tới fcm có tokens thì nó sẽ gửi thông báo tới các thiết bị có token đó
+ */
+
 exports.sendNotification = functions.https.onCall(async (data: any, context: any) => {
   // Nếu dữ liệu nằm trong data.data
   const payload = data.data ? data.data : data
