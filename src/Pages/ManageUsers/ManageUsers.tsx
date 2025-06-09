@@ -109,7 +109,7 @@ export default function ManageUsers() {
         const docRef = doc(db, "users", userId)
         const docSnap = await getDoc(docRef)
         const data = docSnap.data() as DocumentData
-        console.log(data)
+
         let avatarUrl = ""
         try {
           if (data.avatar) {
@@ -161,10 +161,18 @@ export default function ManageUsers() {
     setFile(file)
   }
 
+  const [loading2, setLoading2] = useState<boolean>(false)
+  const loadingToastId = "loading-toast"
+
   const adminResetPassword = httpsCallable(functions, "adminResetPassword")
 
   const handleUpdateUser = handleSubmit(async (data) => {
     if (!data.id) return
+
+    setLoading2(true)
+    toast.loading("Vui lòng đợi trong giây lát", {
+      toastId: loadingToastId
+    })
 
     try {
       let avatarPath = data.avatar
@@ -184,12 +192,11 @@ export default function ManageUsers() {
       })
 
       if (data.resetPassword) {
-        const result = await adminResetPassword({
+        await adminResetPassword({
           uid: data.id,
           newPassword: data.resetPassword,
           secret: "thuanpham99@"
         })
-        console.log("✅ Reset thành công:", result.data)
         toast.success(`Reset mật khẩu thành công cho user ${data.id}`)
       }
 
@@ -206,12 +213,15 @@ export default function ManageUsers() {
             : cat
         )
       )
+      toast.success("Cập nhật người dùng thành công!", { autoClose: 1500 })
+      toast.dismiss(loadingToastId)
 
       handleExitsEditItem()
-      toast.success("Cập nhật người dùng thành công!", { autoClose: 1500 })
     } catch (error) {
       console.error("Lỗi khi cập nhật:", error)
       toast.error("Đã xảy ra lỗi khi cập nhật người dùng!", { autoClose: 1500 })
+    } finally {
+      setLoading2(false)
     }
   })
 
@@ -221,7 +231,17 @@ export default function ManageUsers() {
 
   const [isAdd, setIsAdd] = useState<boolean>(false)
 
-  if (loading) return <p>Đang tải người dùng...</p>
+  if (loading)
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <motion.div
+          animate={{ rotate: 360 }}
+          transition={{ repeat: Infinity, duration: 1 }}
+          className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full"
+        />
+      </div>
+    )
+
   return (
     <div className="p-6 bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen">
       <div className="flex justify-between items-center mb-4">
@@ -457,6 +477,7 @@ export default function ManageUsers() {
                           type="submit"
                           nameButton="Cập nhật người dùng"
                           classNameButton="bg-gradient-to-r from-blue-500 to-indigo-500 text-white px-4 py-2 rounded-full shadow-lg flex items-center gap-2 hover:from-blue-600 hover:to-indigo-600 transition-all font-semibold"
+                          disabled={loading2 ? true : false}
                         />
                       </div>
                     </div>

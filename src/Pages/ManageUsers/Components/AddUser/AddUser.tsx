@@ -53,7 +53,15 @@ export default function AddUser({
     setFile(file as File)
   }
 
+  const [loading, setLoading] = useState<boolean>(false)
+  const loadingToastId = "loading-toast"
+
   const handleAddUser = handleSubmitAdd(async (data) => {
+    setLoading(true)
+    toast.loading("Vui lòng đợi trong giây lát", {
+      toastId: loadingToastId
+    })
+
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, data.email as string, data.password as string)
       const user = userCredential.user
@@ -61,7 +69,7 @@ export default function AddUser({
       let avatarUrl = AvatarDefault
       const specificDate = new Date()
       const timestamp = Timestamp.fromDate(specificDate)
-      console.log(errors.fullName?.message)
+
       if (file) {
         const storageRef = ref(storage, `avatar/${file.name}`)
         await uploadBytes(storageRef, file)
@@ -86,7 +94,10 @@ export default function AddUser({
           createdAt: timestamp
         })
       }
-      // Chuyển đổi ngày giờ thành Timestamp
+
+      toast.success("Thêm người dùng thành công!")
+      toast.dismiss(loadingToastId)
+
       fetchUsers()
       reset()
       setFile(null)
@@ -98,6 +109,8 @@ export default function AddUser({
         })
       }
       console.error("Lỗi khi thêm người dùng:", error)
+    } finally {
+      setLoading(false)
     }
   })
 
@@ -188,6 +201,7 @@ export default function AddUser({
                 type="submit"
                 nameButton="Thêm người dùng"
                 classNameButton="bg-gradient-to-r from-blue-500 to-indigo-500 text-white px-4 py-2 rounded-full shadow-lg flex items-center gap-2 hover:from-blue-600 hover:to-indigo-600 transition-all font-semibold"
+                disabled={loading ? true : false}
               />
             </div>
           </div>

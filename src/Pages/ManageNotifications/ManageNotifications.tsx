@@ -96,7 +96,15 @@ export default function ManageNotifications() {
   const sendNotification = httpsCallable(functions, "sendNotification")
   const [typeNotification, setTypeNotification] = useState("")
 
+  const [loading2, setLoading2] = useState<boolean>(false)
+  const loadingToastId = "loading-toast"
+
   const handleSubmit = async () => {
+    setLoading2(true)
+    toast.loading("Vui lòng đợi trong giây lát", {
+      toastId: loadingToastId
+    })
+
     try {
       if (formData.type === "system") {
         setTypeNotification("[Thông báo hệ thống] ")
@@ -116,6 +124,8 @@ export default function ManageNotifications() {
         }
         const docRef = await addDoc(collection(db, "notifications"), newNotification)
         setNotifications([{ id: docRef.id, ...newNotification }, ...notifications])
+        toast.success("Thêm thông báo thành công!", { autoClose: 1500 })
+        toast.dismiss(loadingToastId)
       } else if (selectedNotification) {
         const notificationRef = doc(db, "notifications", selectedNotification.id)
         await updateDoc(notificationRef, {
@@ -130,6 +140,8 @@ export default function ManageNotifications() {
             notif.id === selectedNotification.id ? { ...notif, ...formData, timestamp: new Date() } : notif
           )
         )
+        toast.success("Cập nhật thông báo thành công!", { autoClose: 1500 })
+        toast.dismiss(loadingToastId)
       }
 
       setIsModalOpen(false)
@@ -141,6 +153,8 @@ export default function ManageNotifications() {
       if (error instanceof Error) {
         console.error("Error message:", error.message)
       }
+    } finally {
+      setLoading2(false)
     }
   }
 
@@ -156,8 +170,7 @@ export default function ManageNotifications() {
       }
     }
     formData.read = true
-    const result = await sendNotification(payload)
-    console.log(result)
+    await sendNotification(payload)
     toast.success("Đã gửi thông báo thành công xuống các thiết bị!", { autoClose: 1500 })
   }
 
@@ -362,7 +375,7 @@ export default function ManageNotifications() {
                   </>
                 )}
               </div>
-              <div className="mt-6 flex justify-between">
+              <div className={`mt-6 flex ${isCreating ? "justify-end" : "justify-between"}`}>
                 {!isCreating && (
                   <button
                     type="button"
@@ -378,6 +391,7 @@ export default function ManageNotifications() {
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={handleSubmit}
+                  disabled={loading2 ? true : false}
                   className="bg-gradient-to-r from-blue-500 to-indigo-500 text-white px-4 py-2 rounded-full shadow-lg hover:from-blue-600 hover:to-indigo-600 transition-all font-semibold"
                 >
                   {isCreating ? "Thêm thông báo" : "Cập nhật thông báo"}

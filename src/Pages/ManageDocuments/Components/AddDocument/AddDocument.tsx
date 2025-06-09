@@ -98,8 +98,15 @@ export default function AddDocument({
     formState: { errors }
   } = useForm<FormDataAdd>({ resolver: yupResolver(formDataAdd) })
 
+  const [loading, setLoading] = useState<boolean>(false)
+  const loadingToastId = "loading-toast"
+
   const handleSubmitAdd = handleSubmit(async (data) => {
-    console.log(data)
+    setLoading(true)
+    toast.loading("Vui lòng đợi trong giây lát", {
+      toastId: loadingToastId
+    })
+
     try {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const newGenreIds: string[] = (data.genreIds as any).map((g: any) => g.id)
@@ -146,8 +153,11 @@ export default function AddDocument({
       setFileImage(null)
       setFilePDF(null)
       toast.success("Thêm tài liệu thành công!", { autoClose: 1500 })
+      toast.dismiss(loadingToastId)
     } catch (error) {
       console.log(error)
+    } finally {
+      setLoading(false)
     }
   })
 
@@ -349,6 +359,7 @@ export default function AddDocument({
                 type="submit"
                 nameButton="Thêm tài liệu"
                 classNameButton="mt-4 bg-gradient-to-r from-blue-500 to-indigo-500 text-white px-4 py-2 rounded-full shadow-lg flex items-center gap-2 hover:from-blue-600 hover:to-indigo-600 transition-all font-semibold"
+                disabled={loading ? true : false}
               />
             </div>
           </div>

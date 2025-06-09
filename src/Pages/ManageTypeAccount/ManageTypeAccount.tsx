@@ -2,7 +2,8 @@ import { collection, getDocs, doc, updateDoc, addDoc, deleteDoc } from "firebase
 import { useEffect, useState } from "react"
 import { db } from "src/firebase"
 import { motion, AnimatePresence } from "framer-motion"
-import { Edit, Plus, Trash } from "lucide-react"
+import { Pencil, Plus, Trash } from "lucide-react"
+import { toast } from "react-toastify"
 
 interface AccountType {
   id: string
@@ -104,17 +105,29 @@ export default function ManageTypeAccount() {
     }
   }
 
+  const [loading2, setLoading2] = useState<boolean>(false)
+  const loadingToastId = "loading-toast"
+
   const handleSubmit = async () => {
+    setLoading2(true)
+    toast.loading("Vui lòng đợi trong giây lát", {
+      toastId: loadingToastId
+    })
+
     try {
       const data = { ...formData }
 
       if (isCreating) {
         const docRef = await addDoc(collection(db, "accountTypes"), data)
         setAccountTypes([{ id: docRef.id, ...data }, ...accountTypes])
+        toast.success("Thêm loại tài khoản thành công!", { autoClose: 1500 })
+        toast.dismiss(loadingToastId)
       } else if (selectedType) {
         const docRef = doc(db, "accountTypes", selectedType.id)
         await updateDoc(docRef, data)
         setAccountTypes(accountTypes.map((type) => (type.id === selectedType.id ? { ...type, ...data } : type)))
+        toast.success("Cập nhật loại tài khoản thành công!", { autoClose: 1500 })
+        toast.dismiss(loadingToastId)
       }
 
       setIsModalOpen(false)
@@ -123,6 +136,8 @@ export default function ManageTypeAccount() {
       resetForm()
     } catch (error) {
       console.error("Lỗi khi cập nhật:", error)
+    } finally {
+      setLoading2(false)
     }
   }
 
@@ -215,7 +230,7 @@ export default function ManageTypeAccount() {
                         onClick={() => handleEditClick(type)}
                         className="text-yellow-500 hover:text-yellow-700"
                       >
-                        <Edit size={18} />
+                        <Pencil size={18} />
                       </motion.button>
                       <motion.button
                         whileHover={{ scale: 1.1 }}
@@ -385,6 +400,7 @@ export default function ManageTypeAccount() {
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={handleSubmit}
+                  disabled={loading2 ? true : false}
                   className="bg-gradient-to-r from-blue-500 to-indigo-500 text-white px-6 py-3 rounded-full shadow-lg hover:from-blue-600 hover:to-indigo-600 transition-all"
                 >
                   {isCreating ? "Tạo" : "Cập nhật"}

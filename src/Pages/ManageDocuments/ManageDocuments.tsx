@@ -227,8 +227,16 @@ export default function ManageDocuments() {
     return ""
   }, [filePDF, decodedUrl])
 
+  const [loading2, setLoading2] = useState<boolean>(false)
+  const loadingToastId = "loading-toast"
+
   const onSubmit = async (data: FormDataUpdate) => {
     if (!documentId) return
+
+    setLoading2(true)
+    toast.loading("Vui lòng đợi trong giây lát", {
+      toastId: loadingToastId
+    })
 
     try {
       const documentRef = doc(db, "documents", documentId)
@@ -292,16 +300,30 @@ export default function ManageDocuments() {
       await batch.commit()
       fetchDocuments()
       toast.success("Cập nhật tài liệu thành công", { autoClose: 1500 })
+      toast.dismiss(loadingToastId)
+
       handleExitsEditItem()
     } catch (error) {
       console.error("Lỗi khi cập nhật tài liệu:", error)
       toast.error("Cập nhật tài liệu thất bại")
+    } finally {
+      setLoading2(false)
     }
   }
 
   const [isAdd, setIsAdd] = useState<boolean>(false)
 
-  if (loading) return <p>Đang tải tài liệu...</p>
+  if (loading)
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <motion.div
+          animate={{ rotate: 360 }}
+          transition={{ repeat: Infinity, duration: 1 }}
+          className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full"
+        />
+      </div>
+    )
+
   return (
     <div className="p-6 bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen">
       <div className="flex justify-between items-center mb-4">
@@ -548,6 +570,7 @@ export default function ManageDocuments() {
                           type="submit"
                           nameButton="Cập nhật tài liệu"
                           classNameButton="mt-4 bg-gradient-to-r from-blue-500 to-indigo-500 text-white px-4 py-2 rounded-full shadow-lg flex items-center gap-2 hover:from-blue-600 hover:to-indigo-600 transition-all font-semibold"
+                          disabled={loading2 ? true : false}
                         />
                       </div>
                     </div>
