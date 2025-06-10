@@ -209,6 +209,7 @@ export default function ManageNotifications() {
       }
     }
     formData.read = true
+    setSelectedNotification((prev) => (prev ? { ...prev, read: true } : null))
     await sendNotification(payload)
     toast.success("Đã gửi thông báo thành công xuống các thiết bị!", { autoClose: 1500 })
   }
