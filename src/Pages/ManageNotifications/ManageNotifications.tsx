@@ -211,34 +211,6 @@ export default function ManageNotifications() {
     }
   }
 
-  const handleSendNotification = async () => {
-    setSending(true)
-    const tokens = (await getFcmTokens()).filter((t: any) => typeof t === "string" && t.length > 0)
-    const payload = {
-      tokens,
-      notification: {
-        title: typeNotification + formData.title,
-        body: formData.message
-      }
-    }
-    try {
-      await sendNotification(payload)
-      await updateDoc(doc(db, "notifications", selectedNotification!.id), { read: true })
-      setNotifications((prev) => prev.map((n) => (n.id === selectedNotification!.id ? { ...n, read: true } : n)))
-      toast.success("Đã gửi thông báo thành công xuống các thiết bị!", {
-        autoClose: 1500,
-        onClose: () => {
-          setIsModalOpen(false)
-          setSelectedNotification(null)
-        }
-      })
-    } catch (error) {
-      toast.error("Gửi thông báo thất bại!")
-    } finally {
-      setSending(false)
-    }
-  }
-
   useEffect(() => {
     // Khi notifications thay đổi, đặt timer cho các thông báo hẹn giờ chưa gửi
     const now = new Date()
@@ -303,9 +275,6 @@ export default function ManageNotifications() {
       </div>
     )
 
-  // Đặt các biến điều kiện ở đầu component
-  const canSendNow =
-    !isCreating && !formData.read && (!formData.scheduledAt || new Date(formData.scheduledAt) <= new Date())
   const canSendNowWhenCreate = isCreating && formData.title.trim() && formData.message.trim() && !formData.scheduledAt
 
   return (
