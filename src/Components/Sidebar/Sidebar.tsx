@@ -15,11 +15,14 @@ export default function Sidebar() {
 
   return (
     <div className="sticky top-0 left-0 p-4 bg-gradient-to-b from-[#00509d] to-[#003366] h-screen border-r border-[#dedede] shadow-2xl min-w-[260px] flex flex-col">
-      <div className="flex flex-col items-center justify-center gap-3 mb-10">
-        <div className="flex items-center gap-6">
-          <img src="/vite.svg" alt="Readify Logo" className="w-12 h-12 rounded-full shadow-lg bg-white" />
-          <span className="text-3xl font-extrabold text-white tracking-widest drop-shadow-lg" style={{ letterSpacing: 2 }}>Readify Admin</span>
-        </div>
+      <div className="flex items-center text-center justify-center mt-2 mb-[40px]">
+        <span className="text-4xl">📚</span>
+        <span
+          className="ml-[-20px] text-3xl font-extrabold text-white tracking-widest drop-shadow-lg"
+          style={{ letterSpacing: 2 }}
+        >
+          Readify Admin
+        </span>
       </div>
       <div className="flex-1 mt-4">
         {sideBarList.map((item, index) => {

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { collection, getDocs, doc, updateDoc, addDoc, deleteDoc } from "firebase/firestore"
 import { useEffect, useState } from "react"
@@ -223,7 +224,7 @@ export default function ManageNotifications() {
     try {
       await sendNotification(payload)
       await updateDoc(doc(db, "notifications", selectedNotification!.id), { read: true })
-      setNotifications((prev) => prev.map((n) => n.id === selectedNotification!.id ? { ...n, read: true } : n))
+      setNotifications((prev) => prev.map((n) => (n.id === selectedNotification!.id ? { ...n, read: true } : n)))
       toast.success("Đã gửi thông báo thành công xuống các thiết bị!", {
         autoClose: 1500,
         onClose: () => {
@@ -303,7 +304,8 @@ export default function ManageNotifications() {
     )
 
   // Đặt các biến điều kiện ở đầu component
-  const canSendNow = !isCreating && !formData.read && (!formData.scheduledAt || new Date(formData.scheduledAt) <= new Date())
+  const canSendNow =
+    !isCreating && !formData.read && (!formData.scheduledAt || new Date(formData.scheduledAt) <= new Date())
   const canSendNowWhenCreate = isCreating && formData.title.trim() && formData.message.trim() && !formData.scheduledAt
 
   return (
@@ -560,7 +562,7 @@ export default function ManageNotifications() {
                               resetForm()
                             }
                           })
-                        } catch (error) {
+                        } catch (error: any) {
                           toast.error("Gửi thông báo thất bại!")
                         } finally {
                           setSending(false)
@@ -570,7 +572,13 @@ export default function ManageNotifications() {
                       disabled={sending}
                       style={{ minWidth: 180 }}
                     >
-                      {sending ? <span className="animate-spin mr-2"><Send /></span> : <Send />}
+                      {sending ? (
+                        <span className="animate-spin mr-2">
+                          <Send />
+                        </span>
+                      ) : (
+                        <Send />
+                      )}
                       <span>{sending ? "Đang gửi..." : "Gửi thông báo ngay"}</span>
                     </button>
                   )}
