@@ -1,7 +1,6 @@
 import { useLocation } from "react-router-dom"
-import { Book, Bell, Bookmark, User, ChartBarStacked } from "lucide-react"
+import { Book, Bell, Bookmark, User, ChartBarStacked, LogOut } from "lucide-react"
 import SidebarItem from "../SidebarItem"
-import Button from "../Button"
 import { setFlagToLS } from "src/Helpers/auth"
 import { useContext } from "react"
 import { AppContext } from "src/Context/authContext"
@@ -25,7 +24,7 @@ export default function Sidebar() {
 
   return (
     <div className="sticky top-0 left-0 p-4 bg-gradient-to-b from-[#00509d] to-[#003366] h-screen border-r border-[#dedede] shadow-2xl min-w-[260px] flex flex-col">
-      <div className="flex items-center text-center justify-center mt-2 mb-[40px]">
+      <div className="flex items-center text-center justify-center mt-2 mb-[10px]">
         <span className="text-4xl">📚</span>
         <span
           className="ml-[-20px] text-3xl font-extrabold text-white tracking-widest drop-shadow-lg"
@@ -58,12 +57,16 @@ export default function Sidebar() {
         })}
       </div>
 
-      <Button
-        onClick={handleLogout}
-        classNameButton="mt-1 p-4 bg-blue-500 w-full text-white font-semibold rounded-sm hover:bg-blue-500/80 duration-200"
-        nameButton="Đăng xuất"
-        type="button"
-      />
+      <div className="flex items-center justify-center">
+        <button
+          onClick={handleLogout}
+          className="mt-1 flex items-center justify-center gap-2 px-4 py-2 w-[150px] bg-blue-500 text-white font-semibold rounded-full hover:bg-blue-500/80 duration-200"
+          type="button"
+        >
+          <LogOut />
+          Đăng xuất
+        </button>
+      </div>
     </div>
   )
 }
