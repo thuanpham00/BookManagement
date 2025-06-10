@@ -14,36 +14,35 @@ export default function Sidebar() {
   const location = useLocation()
 
   return (
-    <div className="sticky top-0 left-0 p-4 bg-[#00509d] h-screen border-r border-[#dedede] shadow-xl">
-      <div>
-        <div className="flex items-center justify-center gap-1">
-          <Book color="white" />
-          <span className="text-white text-xl font-semibold text-center">Quản lý tài liệu</span>
+    <div className="sticky top-0 left-0 p-4 bg-gradient-to-b from-[#00509d] to-[#003366] h-screen border-r border-[#dedede] shadow-2xl min-w-[260px] flex flex-col">
+      <div className="flex flex-col items-center justify-center gap-3 mb-10">
+        <div className="flex items-center gap-6">
+          <img src="/vite.svg" alt="Readify Logo" className="w-12 h-12 rounded-full shadow-lg bg-white" />
+          <span className="text-3xl font-extrabold text-white tracking-widest drop-shadow-lg" style={{ letterSpacing: 2 }}>Readify Admin</span>
         </div>
-        <div className="mt-8">
-          {sideBarList.map((item, index) => {
-            const isActive =
-              location.pathname === "/" && item.path === "/admin/users" ? true : location.pathname.startsWith(item.path)
-
-            const IconComponent = item.icon
-            return (
-              <SidebarItem
-                key={index}
-                className={`text-[14px] ${
-                  isActive
-                    ? "text-black font-semibold"
-                    : "text-white font-medium hover:text-[#f2f2f2] duration-200 ease-in"
-                }`}
-                classNameWrapper={`flex items-center gap-2 cursor-pointer mb-4 rounded-${isActive ? "xl" : "sm"} p-2 ${
-                  isActive ? "bg-[#f1f1f1] border border-gray-200 shadow-lg" : ""
-                }`}
-                icon={<IconComponent color={isActive ? "black" : "white"} />}
-                nameSideBar={item.name}
-                path={item.path}
-              />
-            )
-          })}
-        </div>
+      </div>
+      <div className="flex-1 mt-4">
+        {sideBarList.map((item, index) => {
+          const isActive =
+            location.pathname === "/" && item.path === "/admin/users" ? true : location.pathname.startsWith(item.path)
+          const IconComponent = item.icon
+          return (
+            <SidebarItem
+              key={index}
+              className={`text-[15px] ${
+                isActive
+                  ? "text-[#00509d] font-bold"
+                  : "text-white font-medium hover:text-[#e0e0e0] duration-200 ease-in"
+              }`}
+              classNameWrapper={`flex items-center gap-3 cursor-pointer mb-3 rounded-${isActive ? "2xl" : "lg"} p-3 transition-all ${
+                isActive ? "bg-white/90 border border-[#e0e0e0] shadow-md" : "hover:bg-white/10"
+              }`}
+              icon={<IconComponent color={isActive ? "#00509d" : "white"} size={20} />}
+              nameSideBar={item.name}
+              path={item.path}
+            />
+          )
+        })}
       </div>
     </div>
   )
