@@ -30,6 +30,7 @@ export default function ManageNotifications() {
     type: "system",
     scheduledAt: "" // Thêm trường thời gian hẹn giờ
   })
+  const [sending, setSending] = useState(false)
 
   useEffect(() => {
     const fetchNotifications = async () => {
@@ -123,6 +124,18 @@ export default function ManageNotifications() {
   const loadingToastId = "loading-toast"
 
   const handleSubmit = async () => {
+    // Validate dữ liệu trước khi xử lý
+    if (!formData.title.trim() || !formData.message.trim()) {
+      toast.error("Vui lòng nhập đầy đủ tên và nội dung thông báo!")
+      return
+    }
+    if (formData.scheduledAt) {
+      const scheduledDate = new Date(formData.scheduledAt)
+      if (scheduledDate <= new Date()) {
+        toast.error("Thời gian hẹn giờ phải lớn hơn thời điểm hiện tại!")
+        return
+      }
+    }
     setLoading2(true)
     toast.loading("Vui lòng đợi trong giây lát", {
       toastId: loadingToastId
@@ -198,9 +211,8 @@ export default function ManageNotifications() {
   }
 
   const handleSendNotification = async () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    setSending(true)
     const tokens = (await getFcmTokens()).filter((t: any) => typeof t === "string" && t.length > 0)
-
     const payload = {
       tokens,
       notification: {
@@ -208,10 +220,22 @@ export default function ManageNotifications() {
         body: formData.message
       }
     }
-    formData.read = true
-    setSelectedNotification((prev) => (prev ? { ...prev, read: true } : null))
-    await sendNotification(payload)
-    toast.success("Đã gửi thông báo thành công xuống các thiết bị!", { autoClose: 1500 })
+    try {
+      await sendNotification(payload)
+      await updateDoc(doc(db, "notifications", selectedNotification!.id), { read: true })
+      setNotifications((prev) => prev.map((n) => n.id === selectedNotification!.id ? { ...n, read: true } : n))
+      toast.success("Đã gửi thông báo thành công xuống các thiết bị!", {
+        autoClose: 1500,
+        onClose: () => {
+          setIsModalOpen(false)
+          setSelectedNotification(null)
+        }
+      })
+    } catch (error) {
+      toast.error("Gửi thông báo thất bại!")
+    } finally {
+      setSending(false)
+    }
   }
 
   useEffect(() => {
@@ -277,6 +301,10 @@ export default function ManageNotifications() {
         />
       </div>
     )
+
+  // Đặt các biến điều kiện ở đầu component
+  const canSendNow = !isCreating && !formData.read && (!formData.scheduledAt || new Date(formData.scheduledAt) <= new Date())
+  const canSendNowWhenCreate = isCreating && formData.title.trim() && formData.message.trim() && !formData.scheduledAt
 
   return (
     <div className="p-6 bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen">
@@ -461,6 +489,7 @@ export default function ManageNotifications() {
                     rows={4}
                     value={formData.message}
                     onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                    disabled={formData.read}
                   />
                 </div>
 
@@ -471,6 +500,7 @@ export default function ManageNotifications() {
                     className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
                     value={formData.scheduledAt}
                     onChange={(e) => setFormData({ ...formData, scheduledAt: e.target.value })}
+                    disabled={formData.read}
                   />
                 </div>
 
@@ -488,28 +518,74 @@ export default function ManageNotifications() {
                   </>
                 )}
               </div>
-              <div className={`mt-6 flex ${isCreating ? "justify-end" : "justify-between"}`}>
-                {!isCreating && (
-                  <button
-                    type="button"
-                    onClick={handleSendNotification}
-                    className={`mt-4 bg-[#4f772d] text-white px-4 py-2 rounded-full shadow-lg flex items-center gap-2  hover:opacity-50 transition-all font-semibold ${selectedNotification?.read ? "cursor-not-allowed" : ""}`}
-                    disabled={selectedNotification?.read ? true : false}
+              <div className={`mt-6 flex ${isCreating ? "justify-between" : "justify-between"} items-end`}>
+                <div className="flex-1 flex items-end">
+                  {/* Nút gửi ngay khi tạo mới, chỉ hiện khi có title, message và không có scheduledAt */}
+                  {canSendNowWhenCreate && (
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        if (!formData.title.trim() || !formData.message.trim()) {
+                          toast.error("Vui lòng nhập đầy đủ tên và nội dung thông báo!")
+                          return
+                        }
+                        setSending(true)
+                        const tokens = (await getFcmTokens()).filter((t: any) => typeof t === "string" && t.length > 0)
+                        const payload = {
+                          tokens,
+                          notification: {
+                            title: formData.title,
+                            body: formData.message
+                          }
+                        }
+                        try {
+                          // Tạo thông báo trước khi gửi
+                          const newNotification: any = {
+                            title: formData.title,
+                            message: formData.message,
+                            timestamp: new Date(),
+                            read: false,
+                            type: formData.type
+                          }
+                          const docRef = await addDoc(collection(db, "notifications"), newNotification)
+                          await sendNotification(payload)
+                          await updateDoc(doc(db, "notifications", docRef.id), { read: true })
+                          setNotifications([{ id: docRef.id, ...newNotification, read: true }, ...notifications])
+                          toast.success("Đã gửi thông báo thành công!", {
+                            autoClose: 1500,
+                            onClose: () => {
+                              setIsModalOpen(false)
+                              setIsCreating(false)
+                              setSelectedNotification(null)
+                              resetForm()
+                            }
+                          })
+                        } catch (error) {
+                          toast.error("Gửi thông báo thất bại!")
+                        } finally {
+                          setSending(false)
+                        }
+                      }}
+                      className={`mt-4 bg-[#4f772d] text-white px-4 py-2 rounded-full shadow-lg flex items-center gap-2 hover:opacity-50 transition-all font-semibold ${sending ? "opacity-60 cursor-not-allowed" : ""}`}
+                      disabled={sending}
+                      style={{ minWidth: 180 }}
+                    >
+                      {sending ? <span className="animate-spin mr-2"><Send /></span> : <Send />}
+                      <span>{sending ? "Đang gửi..." : "Gửi thông báo ngay"}</span>
+                    </button>
+                  )}
+                </div>
+                <div className="flex-1 flex justify-end items-end">
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={handleSubmit}
+                    disabled={loading2 || formData.read}
+                    className="bg-gradient-to-r from-blue-500 to-indigo-500 text-white px-4 py-2 rounded-full shadow-lg hover:from-blue-600 hover:to-indigo-600 transition-all font-semibold"
                   >
-                    <Send />
-                    <span>Gửi thông báo xuống người dùng</span>
-                  </button>
-                )}
-
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={handleSubmit}
-                  disabled={loading2 ? true : false}
-                  className="bg-gradient-to-r from-blue-500 to-indigo-500 text-white px-4 py-2 rounded-full shadow-lg hover:from-blue-600 hover:to-indigo-600 transition-all font-semibold"
-                >
-                  {isCreating ? "Thêm thông báo" : "Cập nhật thông báo"}
-                </motion.button>
+                    {isCreating ? "Thêm thông báo" : "Cập nhật thông báo"}
+                  </motion.button>
+                </div>
               </div>
             </motion.div>
           </motion.div>
