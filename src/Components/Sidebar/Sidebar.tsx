@@ -15,7 +15,7 @@ export default function Sidebar() {
 
   return (
     <div className="sticky top-0 left-0 p-4 bg-gradient-to-b from-[#00509d] to-[#003366] h-screen border-r border-[#dedede] shadow-2xl min-w-[260px] flex flex-col">
-      <div className="flex items-center text-center justify-center mt-2 mb-[40px]">
+      <div className="flex items-center text-center justify-center mt-2 mb-[10px]">
         <span className="text-4xl">📚</span>
         <span
           className="ml-[-20px] text-3xl font-extrabold text-white tracking-widest drop-shadow-lg"
@@ -37,7 +37,7 @@ export default function Sidebar() {
                   ? "text-[#00509d] font-bold"
                   : "text-white font-medium hover:text-[#e0e0e0] duration-200 ease-in"
               }`}
-              classNameWrapper={`flex items-center gap-3 cursor-pointer mb-3 rounded-${isActive ? "2xl" : "lg"} p-3 transition-all ${
+              classNameWrapper={`flex items-center gap-3 cursor-pointer mb-3 rounded-${isActive ? "2xl" : "2xl"} p-3 transition-all ${
                 isActive ? "bg-white/90 border border-[#e0e0e0] shadow-md" : "hover:bg-white/10"
               }`}
               icon={<IconComponent color={isActive ? "#00509d" : "white"} size={20} />}
