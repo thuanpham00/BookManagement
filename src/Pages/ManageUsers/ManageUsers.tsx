@@ -25,9 +25,9 @@ import { httpsCallable } from "firebase/functions"
 type FormDataUpdate = Pick<
   SchemaUserType,
   | "id"
+  | "accountType"
   | "fullName"
   | "email"
-  | "accountType"
   | "dateOfBirth"
   | "address"
   | "fcmToken"
@@ -67,7 +67,7 @@ export default function ManageUsers() {
   }
 
   useEffect(() => {
-    fetchUsers()
+    fetchUsers() // chạy 1 lần
   }, [])
 
   const [userId, setUserId] = useState<string | null>(null)
@@ -98,7 +98,8 @@ export default function ManageUsers() {
       avatar: "",
       googleId: "",
       createdAt: "",
-      lastLogin: ""
+      lastLogin: "",
+      resetPassword: ""
     },
     resolver: yupResolver(formDataUpdate)
   })
